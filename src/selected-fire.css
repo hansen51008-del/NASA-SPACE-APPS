@@ -1,0 +1,38 @@
+.selected-fire-anchor {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.selected-fire-effect {
+  position: absolute;
+  width: 88px;
+  height: 132px;
+  left: -44px;
+  bottom: -10px;
+  transform: scale(var(--fire-scale, 0.65));
+  transform-origin: 50% calc(100% - 10px);
+  pointer-events: none;
+}
+.fire-fluid {
+  display: block;
+  position: relative;
+  width: 88px;
+  height: 132px;
+}
+.fire-contact-glow {
+  position: absolute;
+  width: 68px;
+  height: 48px;
+  left: 10px;
+  bottom: -14px;
+  transform: scaleY(var(--ground-depth, 0.5));
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    #ffbc5975,
+    #fa651532 38%,
+    #d64d0012 58%,
+    transparent 72%
+  );
+  opacity: 0.28;
+}

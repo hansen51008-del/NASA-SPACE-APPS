@@ -1,0 +1,243 @@
+/* SVG atlas symbols; decorative fire follows the selected observations. */
+.fire-haze-2d {
+  animation: fire-haze-drift 4s ease-out var(--fire-delay) infinite;
+}
+@keyframes fire-haze-drift {
+  from {
+    transform: translate(0, 4px);
+    opacity: 0.2;
+  }
+  to {
+    transform: translate(5px, -9px);
+    opacity: 0;
+  }
+}
+.fire-flame {
+  transform-origin: 0 0;
+  animation: ember-flicker var(--fire-duration) ease-in-out var(--fire-delay)
+    infinite alternate;
+}
+.fire-sparks {
+  animation: ember-rise 3.1s ease-out var(--fire-delay) infinite;
+}
+.fire-groundlight {
+  animation: ember-breathe 2.7s ease-in-out var(--fire-delay) infinite alternate;
+}
+@keyframes ember-flicker {
+  0%,
+  100% {
+    transform: scale(0.9, 0.82);
+    opacity: 0.88;
+  }
+  35% {
+    transform: scale(1.03, 1.05);
+    opacity: 1;
+  }
+  65% {
+    transform: scale(0.93, 0.94);
+    opacity: 0.96;
+  }
+}
+@keyframes ember-rise {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(1, -14);
+    opacity: 0;
+  }
+}
+@keyframes ember-breathe {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+.symbol-explanation {
+  grid-column: 1/-1;
+  font-size: 7px;
+  color: #a2bfbc;
+  border-top: 1px solid #779a9033;
+  padding-top: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fire-flame,
+  .fire-sparks,
+  .fire-groundlight {
+    animation: none !important;
+  }
+  .fire-sparks {
+    display: none;
+  }
+  .fire-haze-2d {
+    animation: none;
+    opacity: 0.1;
+  }
+}
+.atlas-map {
+  background: radial-gradient(
+    ellipse at 52% 50%,
+    #225577 0,
+    #163e5e 48%,
+    #102b46 85%
+  );
+}
+.atlas-map .province {
+  stroke: #294d4a;
+  stroke-width: 0.7;
+  paint-order: fill stroke;
+  transition:
+    stroke 0.16s,
+    filter 0.16s;
+}
+.map-canvas.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.map-canvas.is-fullscreen .terrain-view,
+.map-canvas.is-fullscreen .terrain-loading,
+.map-canvas.is-fullscreen .geography {
+  height: 100%;
+  max-height: none;
+  width: 100%;
+}
+.atlas-map .province:hover {
+  stroke: #e0edc6;
+  stroke-width: 1.2;
+  filter: brightness(1.15);
+}
+.atlas-map .province.selected {
+  stroke: #f0f9d9;
+  stroke-width: 1.6;
+}
+.atlas-map .province:focus-visible {
+  stroke: #fff;
+  stroke-width: 2;
+  filter: brightness(1.18);
+}
+.atlas-map .island-label {
+  fill: #f4f5dd;
+  stroke: #29413a;
+  stroke-width: 2.7;
+  font-size: 9px;
+  letter-spacing: 2.2px;
+}
+.atlas-map .graticule {
+  opacity: 0.12;
+}
+.atlas-map .equator {
+  opacity: 0.17;
+}
+.atlas-map .coordinate-label {
+  fill: #7395a1;
+}
+.atlas-map .ocean-label {
+  fill: #98bcc3;
+  letter-spacing: 3px;
+}
+.atlas-map .water-label {
+  fill: #87a7b0;
+}
+.map-view-switch {
+  position: absolute;
+  top: 49px;
+  left: 20px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid #5f82835c;
+  border-radius: 7px;
+  background: #142e37df;
+}
+.map-view-switch button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border-radius: 4px;
+  padding: 7px 9px;
+  color: #adc9ca;
+  font-size: 10px;
+}
+.map-view-switch button[aria-pressed="true"] {
+  background: #c4d4b7;
+  color: #2a433a;
+}
+.map-view-switch button:hover {
+  box-shadow: inset 0 0 0 1px #c4d4b766;
+}
+.map-view-switch .province-colour-toggle {
+  margin-left: 5px;
+  border-left: 1px solid #66827866;
+  padding-left: 11px;
+}
+.map-view-switch .province-colour-toggle[aria-pressed="true"] {
+  color: #dcead7;
+  background: #49614b55;
+}
+.island-wall {
+  pointer-events: none;
+}
+.atlas-map .province {
+  stroke-width: 0.55;
+  stroke-linejoin: round;
+}
+.map-view-switch > span {
+  padding: 0 8px;
+  margin-left: 3px;
+  border-left: 1px solid #65808455;
+  color: #a8c2bb;
+  font-size: 9px;
+}
+.atlas-map .map-tooltip {
+  top: 95px;
+}
+.atlas-map .map-tools {
+  background: #193640ed;
+  border-color: #6d9394;
+}
+.atlas-map .map-legend {
+  background: #17353be8;
+  border-color: #668785;
+}
+.atlas-map .map-selection {
+  background: #1c3b40e8;
+  border-color: #698f88;
+}
+@media (max-width: 640px) {
+  .map-view-switch {
+    top: 37px;
+    left: 12px;
+    padding: 3px;
+  }
+  .map-view-switch button {
+    padding: 6px 7px;
+    font-size: 9px;
+  }
+  .map-view-switch button svg {
+    width: 11px;
+    height: 11px;
+  }
+  .map-view-switch > span {
+    display: none;
+  }
+  .atlas-map .map-tooltip {
+    top: 76px;
+  }
+}

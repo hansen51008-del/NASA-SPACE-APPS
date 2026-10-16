@@ -15,6 +15,95 @@
 body {
   background: var(--bg);
 }
+.quality-control {
+  padding: 0 16px 12px;
+}
+.quality-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--control);
+  color: #e4e7eb;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quality-toggle:hover {
+  background: var(--surface-hover);
+}
+.quality-toggle[aria-pressed="true"] {
+  background: #e7b1841a;
+  border-color: #e7b184;
+  color: #f2c6a3;
+}
+.quality-toggle:focus-visible {
+  outline: 2px solid #e7b184;
+  outline-offset: 3px;
+}
+.quality-badge {
+  position: absolute;
+  z-index: 5;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 6px 12px;
+  background: var(--bg);
+  color: #f2c6a3;
+  font-size: 11px;
+  pointer-events: none;
+}
+.lag-banner {
+  position: fixed;
+  z-index: 45;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(430px, calc(100% - 24px));
+  background: var(--panel);
+  border: 1px solid #e7b184;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 32px #0005;
+}
+.lag-banner p {
+  margin: 0 0 8px;
+}
+.lag-banner button {
+  min-height: 44px;
+  padding: 8px 12px;
+  margin-right: 6px;
+}
+.analysis-progress {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 16px;
+}
+.observation-picker > button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  margin-bottom: 6px;
+}
+.observation-picker small {
+  display: block;
+  color: var(--muted);
+}
+.observation-picker nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 .topbar {
   background: var(--bg);
   border-color: var(--line);
@@ -129,7 +218,7 @@ body {
 @media (max-width: 760px) {
   .main-tabs {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 4px;
     width: 100%;
   }

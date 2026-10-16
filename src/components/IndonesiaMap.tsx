@@ -1,4 +1,12 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { geoArea, geoGraticule, geoMercator, geoPath } from "d3-geo";
 import {
   Crosshair,
@@ -19,7 +27,7 @@ import { number } from "../types";
 import { provinceColour } from "./mapAppearance";
 import HotspotSymbols from "./HotspotSymbols";
 import HotspotDetails from "./HotspotDetails";
-import { useMapQuality } from "./MapQuality";
+import { useMapQuality, qualityDisplay } from "./MapQuality";
 const TerrainMap = lazy(() => import("./TerrainMap"));
 interface Props {
   boundaries: Provinces;
@@ -50,11 +58,20 @@ export default function IndonesiaMap({
   density,
   onDensityChange,
 }: Props) {
-  const {quality} = useMapQuality();
+  const { quality } = useMapQuality();
   const [picker, setPicker] = useState(false);
   const [page, setPage] = useState(0);
   const [zoom, setZoom] = useState(1),
     [pan, setPan] = useState({ x: 0, y: 0 });
+  const plane = useRef<SVGGElement>(null);
+  const dragFrame = useRef(0);
+  const nextPan = useRef(pan);
+  useEffect(() => () => cancelAnimationFrame(dragFrame.current), []);
+  const finishDrag = () => {
+    cancelAnimationFrame(dragFrame.current);
+    if (drag) setPan(nextPan.current);
+    setDrag(null);
+  };
   const [hover, setHover] = useState<string | null>(null);
   const [dimensional, setDimensional] = useState(true);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
@@ -66,6 +83,12 @@ export default function IndonesiaMap({
   }, []);
   const closeDetail = () => {
     setInspectedId(null);
+    if (!detailOpener.current?.isConnected) {
+      mapPanel.current
+        ?.querySelector<HTMLButtonElement>(".open-observation")
+        ?.focus();
+      return;
+    }
     if (
       detailOpener.current instanceof HTMLElement ||
       detailOpener.current instanceof SVGElement
@@ -75,9 +98,13 @@ export default function IndonesiaMap({
   const inspected = showMarkers
     ? records.find((r) => r.id === inspectedId)
     : undefined;
-  const observations = useMemo(() => records.filter(
-    (r) => selected === "Indonesia" || r.province === selected,
-  ), [records, selected]);
+  const observations = useMemo(
+    () =>
+      records.filter(
+        (r) => selected === "Indonesia" || r.province === selected,
+      ),
+    [records, selected],
+  );
   useEffect(() => {
     setInspectedId(null);
     setPicker(false);
@@ -196,12 +223,13 @@ export default function IndonesiaMap({
   );
   // Consolidate overlapping map symbols only. Analytical counts retain every observation.
   const symbols = useMemo(() => {
+    const cellSize = qualityDisplay(quality).cell;
     const cells = new Map<
       string,
       { record: Hotspot; high: boolean; count: number }
     >();
     records.forEach((record) => {
-      const key = `${record.province}:${Math.floor(record.longitude / 0.04)}:${Math.floor(record.latitude / 0.04)}`;
+      const key = `${record.province}:${Math.floor(record.longitude / cellSize)}:${Math.floor(record.latitude / cellSize)}`;
       const cell = cells.get(key);
       if (cell) {
         cell.count++;
@@ -214,7 +242,7 @@ export default function IndonesiaMap({
         });
     });
     return [...cells.values()];
-  }, [records]);
+  }, [records, quality]);
   const maxCount = Math.max(1, ...counts.values());
   const reset = () => {
     setZoom(1);
@@ -225,6 +253,11 @@ export default function IndonesiaMap({
       ref={mapPanel}
       className={`map-canvas atlas-map ${dimensional ? "is-dimensional" : "is-flat"} ${fullscreen ? "is-fullscreen" : ""}`}
     >
+      {quality === "low" && (
+        <span className="quality-badge" role="status">
+          Kualitas rendah
+        </span>
+      )}
       <div className="map-topline">
         <span>
           <span className="status-dot" /> KEPULAUAN INDONESIA{" "}
@@ -302,22 +335,32 @@ export default function IndonesiaMap({
           viewBox="0 0 1000 440"
           aria-label="Peta interaktif provinsi Indonesia"
           onPointerDown={(e) => {
-            if (e.button === 0)
+            if (e.button === 0) {
+              nextPan.current = pan;
               setDrag({ x: e.clientX, y: e.clientY, px: pan.x, py: pan.y });
+            }
           }}
           onPointerMove={(e) => {
             if (drag && e.buttons === 1) {
               const scale =
                 1000 / e.currentTarget.getBoundingClientRect().width;
-              setPan({
+              nextPan.current = {
                 x: drag.px + (e.clientX - drag.x) * scale,
                 y: drag.py + (e.clientY - drag.y) * scale,
+              };
+              cancelAnimationFrame(dragFrame.current);
+              dragFrame.current = requestAnimationFrame(() => {
+                const p = nextPan.current;
+                plane.current?.setAttribute(
+                  "transform",
+                  `translate(${500 + p.x} ${220 + p.y}) scale(${zoom}) translate(-500 -220)`,
+                );
               });
             }
           }}
-          onPointerUp={() => setDrag(null)}
+          onPointerUp={finishDrag}
           onPointerLeave={() => {
-            setDrag(null);
+            finishDrag();
             setHover(null);
           }}
         >
@@ -387,6 +430,7 @@ export default function IndonesiaMap({
           <rect width="1000" height="440" fill="url(#map-grid)" />
           <rect width="1000" height="440" fill="url(#map-light)" />
           <g
+            ref={plane}
             transform={`translate(${500 + pan.x} ${220 + pan.y}) scale(${zoom}) translate(-500 -220)`}
           >
             <g className="atlas-plane">
@@ -592,7 +636,10 @@ export default function IndonesiaMap({
         {showMarkers && observations.length > 0 && (
           <button
             className="open-observation"
-            onClick={() => {setPage(0);setPicker(true);}}
+            onClick={() => {
+              setPage(0);
+              setPicker(true);
+            }}
           >
             Rincian hotspot
           </button>
@@ -644,12 +691,52 @@ export default function IndonesiaMap({
       {!records.length && (
         <div className="map-empty">Tidak ada observasi untuk filter ini.</div>
       )}
-      {picker && <section className="observation-details observation-picker" aria-label="Pilih observasi" onKeyDown={e=>{if(e.key==='Escape')setPicker(false);}}>
-        <header><h3>Pilih observasi</h3><button autoFocus onClick={()=>setPicker(false)} aria-label="Tutup pilihan observasi">×</button></header>
-        <p>Pilih titik di peta atau satu observasi berikut. Tidak ada wilayah yang dipilih otomatis.</p>
-        {observations.slice(page*20,page*20+20).map(r=><button key={r.id} onClick={()=>inspect(r)}>{r.province} · {r.latitude.toFixed(2)}, {r.longitude.toFixed(2)}<small>{r.date.replace('T',' ').slice(0,16)} UTC · {r.source}</small></button>)}
-        <nav aria-label="Halaman observasi"><button disabled={!page} onClick={()=>setPage(page-1)}>Sebelumnya</button><span>{page+1} / {Math.ceil(observations.length/20)}</span><button disabled={(page+1)*20>=observations.length} onClick={()=>setPage(page+1)}>Berikutnya</button></nav>
-      </section>}
+      {picker && (
+        <section
+          className="observation-details observation-picker"
+          aria-label="Pilih observasi"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setPicker(false);
+          }}
+        >
+          <header>
+            <h3>Pilih observasi</h3>
+            <button
+              autoFocus
+              onClick={() => setPicker(false)}
+              aria-label="Tutup pilihan observasi"
+            >
+              ×
+            </button>
+          </header>
+          <p>
+            Pilih titik di peta atau satu observasi berikut. Tidak ada wilayah
+            yang dipilih otomatis.
+          </p>
+          {observations.slice(page * 20, page * 20 + 20).map((r) => (
+            <button key={r.id} onClick={() => inspect(r)}>
+              {r.province} · {r.latitude.toFixed(2)}, {r.longitude.toFixed(2)}
+              <small>
+                {r.date.replace("T", " ").slice(0, 16)} UTC · {r.source}
+              </small>
+            </button>
+          ))}
+          <nav aria-label="Halaman observasi">
+            <button disabled={!page} onClick={() => setPage(page - 1)}>
+              Sebelumnya
+            </button>
+            <span>
+              {page + 1} / {Math.ceil(observations.length / 20)}
+            </span>
+            <button
+              disabled={(page + 1) * 20 >= observations.length}
+              onClick={() => setPage(page + 1)}
+            >
+              Berikutnya
+            </button>
+          </nav>
+        </section>
+      )}
       {inspected && <HotspotDetails record={inspected} onClose={closeDetail} />}
     </div>
   );

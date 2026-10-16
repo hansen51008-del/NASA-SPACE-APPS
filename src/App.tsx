@@ -15,6 +15,7 @@ import {
   Map,
   MapPin,
   Newspaper,
+  MessageCircle,
   Radio,
   Satellite,
   ShieldCheck,
@@ -29,7 +30,9 @@ import RiskStatusCard from "./components/RiskStatusCard";
 import RiskBrief from "./components/RiskBrief";
 import EmergencyActionPanel from "./components/EmergencyActionPanel";
 import { useDashboardAnalysis } from "./components/useDashboardAnalysis";
+import { useMapReplay } from "./components/useMapReplay";
 import { MapPerformance, QualityControl } from "./components/MapQuality";
+import { buildChatContext } from "./services/chatProtocol";
 import IndonesiaMap from "./components/IndonesiaMap";
 import RegionPanel from "./components/RegionPanel";
 import YearSelector from "./components/YearSelector";
@@ -44,12 +47,14 @@ import ProvinceSearch from "./components/ProvinceSearch";
 import RegionLeaders from "./components/RegionLeaders";
 type View = "history" | "compare";
 const NewsFeed = lazy(() => import("./components/NewsFeed"));
-type Tab = "home" | "map" | "data" | "news";
+const AssistantChat = lazy(() => import("./components/AssistantChat"));
+type Tab = "home" | "map" | "data" | "news" | "chat";
 const tabs = [
   { id: "home", label: "Beranda", icon: Home },
   { id: "map", label: "Peta aktivitas", icon: Map },
   { id: "data", label: "Data & analitik", icon: ActivityIcon },
   { id: "news", label: "Berita", icon: Newspaper },
+  { id: "chat", label: "Asisten AI", icon: MessageCircle },
 ] as const;
 export default function App() {
   const [data, setData] = useState<
@@ -76,6 +81,7 @@ export default function App() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [mapVisited, setMapVisited] = useState(false);
+  const [chatVisited, setChatVisited] = useState(false);
   const [mapPanel, setMapPanel] = useState<"location" | "layers" | null>(null);
   const [desktopPanels, setDesktopPanels] = useState({
     location: true,
@@ -140,15 +146,20 @@ export default function App() {
     void load();
     return () => controller.abort();
   }, []);
-  const {analysis, pending, analysisError} = useDashboardAnalysis(data,{region,year,month,layer,highOnly});
-  useEffect(() => {
-    if (!playing || data?.mode === "firms" || pending) return;
-    const timer = window.setInterval(
-      () => setMonth((m) => (m === null || m === 12 ? 1 : m + 1)),
-      1300 / speed,
-    );
-    return () => window.clearInterval(timer);
-  }, [playing, speed, data?.mode, pending]);
+  const { analysis, pending, analysisError } = useDashboardAnalysis(data, {
+    region,
+    year,
+    month,
+    layer,
+    highOnly,
+  });
+  useMapReplay(
+    playing,
+    tab === "map" && data?.mode === "demo",
+    pending,
+    speed,
+    setMonth,
+  );
   useEffect(() => {
     if (modal) dialog.current?.showModal();
     else dialog.current?.close();
@@ -177,7 +188,24 @@ export default function App() {
   const hasCoverage =
     isDemo ||
     (month === null ? !!coverage : coveredMonth(coverage, year, month));
-  const {risk,regionalActivity,mapRecords,selectedActivity,selectedRaw,harmonizedCount,counts,history,baseline,anomaly,ranking,activeRegions,high,highPercent,gridCount,monthAnomalies} = analysis;
+  const {
+    risk,
+    regionalActivity,
+    mapRecords,
+    selectedActivity,
+    selectedRaw,
+    harmonizedCount,
+    counts,
+    history,
+    baseline,
+    anomaly,
+    ranking,
+    activeRegions,
+    high,
+    highPercent,
+    gridCount,
+    monthAnomalies,
+  } = analysis;
   const changeYear = (y: number) => {
     if (!years.includes(y)) return;
     setYear(y);
@@ -191,6 +219,7 @@ export default function App() {
   };
   function navigate(next: Tab) {
     setTab(next);
+    if (next === "chat") setChatVisited(true);
     if (next === "map") setMapVisited(true);
     setPlaying(false);
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -435,7 +464,8 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main aria-busy={pending}
+      <main
+        aria-busy={pending}
         className={
           tab === "map"
             ? "map-layout"
@@ -447,10 +477,19 @@ export default function App() {
           { "--app-header-height": `${headerHeight}px` } as React.CSSProperties
         }
       >
-        {pending && <div className="analysis-progress" role="status">Memperbarui analisis…</div>}
-        {analysisError && <p role="alert">Analisis tidak dapat dimuat. Muat ulang halaman.</p>}
-        <MapPerformance active={tab === "map"} animating={playing || (markers && region !== "Indonesia")} />
-        <div className="page-heading">
+        {pending && (
+          <div className="analysis-progress" role="status">
+            Memperbarui analisis…
+          </div>
+        )}
+        {analysisError && (
+          <p role="alert">Analisis tidak dapat dimuat. Muat ulang halaman.</p>
+        )}
+        <MapPerformance
+          active={tab === "map"}
+          animating={playing || (markers && region !== "Indonesia")}
+        />
+        <div className="page-heading" hidden={tab === "chat"}>
           <div>
             <div className="breadcrumb">
               <Globe2 size={12} /> KESIAPSIAGAAN KARHUTLA{" "}
@@ -485,7 +524,7 @@ export default function App() {
               <button
                 className="outline-button"
                 onClick={exportData}
-                disabled={!data}
+                disabled={!data || pending || analysisError}
               >
                 {exported ? <Check size={15} /> : <ArrowDownToLine size={15} />}{" "}
                 {exported ? "Diekspor" : "Ekspor CSV"}
@@ -538,7 +577,19 @@ export default function App() {
               {risk && (
                 <div className="citizen-grid">
                   <div className="citizen-summary">
-                    <RiskStatusCard risk={pending || analysisError ? {...risk,level:null,score:null,note:"Analyse sedang diperbarui."} : risk} region={region} />
+                    <RiskStatusCard
+                      risk={
+                        pending || analysisError
+                          ? {
+                              ...risk,
+                              level: null,
+                              score: null,
+                              note: "Analisis sedang diperbarui.",
+                            }
+                          : risk
+                      }
+                      region={region}
+                    />
                     <RiskBrief
                       risk={risk}
                       region={region}
@@ -817,9 +868,7 @@ export default function App() {
                 <Metric
                   label="Sel grid terpadat"
                   value={
-                    hasCoverage
-                      ? number(gridCount)
-                      : "Belum dapat dinilai"
+                    hasCoverage ? number(gridCount) : "Belum dapat dinilai"
                   }
                   suffix="obs."
                   icon={<Grid2X2 size={17} />}
@@ -977,7 +1026,30 @@ export default function App() {
                 </Suspense>
               </section>
             )}
-            {tab !== "map" && tab !== "news" && sourceDetails}
+            {chatVisited && (
+              <section
+                id="panel-chat"
+                role="tabpanel"
+                aria-labelledby="tab-chat"
+                hidden={tab !== "chat"}
+                tabIndex={0}
+              >
+                <Suspense fallback={<p role="status">Memuat asisten…</p>}>
+                  <AssistantChat
+                    active={tab === "chat"}
+                    context={buildChatContext(
+                      region,
+                      periodLabel,
+                      risk,
+                      data,
+                      pending || analysisError,
+                    )}
+                    onNavigate={navigate}
+                  />
+                </Suspense>
+              </section>
+            )}
+            {tab !== "map" && tab !== "news" && tab !== "chat" && sourceDetails}
             <div className="data-notice">
               <InfoMark />
               <p>

@@ -71,8 +71,8 @@ const dem = {
   attribution:
     '<a href="https://mapterhorn.com/attribution/" target="_blank" rel="noreferrer">Terrain: Mapterhorn contributors</a>',
 };
-const duration = () =>
-  matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1100;
+const duration = (low: boolean) =>
+  low || matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1100;
 // Supersample even ordinary 1x screens. Bound the render target on fullscreen
 // displays instead of multiplying every GPU buffer by an unrestricted DPR.
 const terrainPixelRatio = (width: number, height: number) =>
@@ -86,8 +86,9 @@ const terrainPixelRatio = (width: number, height: number) =>
   );
 
 export default function TerrainMap(props: Props) {
-  const {quality} = useMapQuality();
-  const qualityRef = useRef(quality); qualityRef.current=quality;
+  const { quality } = useMapQuality();
+  const qualityRef = useRef(quality);
+  qualityRef.current = quality;
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<GLMap | null>(null);
   const current = useRef(props);
@@ -142,7 +143,7 @@ export default function TerrainMap(props: Props) {
       pitch: 62,
       bearing: -22,
       padding: 0,
-      duration: duration(),
+      duration: duration(qualityRef.current === "low"),
     });
     setFocus(`${props.selected} / observasi ${index + 1}`);
   };
@@ -165,10 +166,24 @@ export default function TerrainMap(props: Props) {
       })),
     };
   }, [props.boundaries, props.records]);
+  const displayRecords = useMemo(() => {
+    if (quality !== "low") return props.records;
+    const cells = new Map<string, Hotspot>();
+    for (const record of props.records) {
+      const key = `${record.province}:${Math.floor(record.longitude / 0.08)}:${Math.floor(record.latitude / 0.08)}`;
+      const previous = cells.get(key);
+      if (
+        !previous ||
+        (record.confidence === "high" && previous.confidence !== "high")
+      )
+        cells.set(key, record);
+    }
+    return [...cells.values()];
+  }, [props.records, quality]);
   const hotspots = useMemo(
     () => ({
       type: "FeatureCollection" as const,
-      features: props.records.map((r) => ({
+      features: displayRecords.map((r) => ({
         type: "Feature" as const,
         geometry: {
           type: "Point" as const,
@@ -181,7 +196,7 @@ export default function TerrainMap(props: Props) {
         },
       })),
     }),
-    [props.records],
+    [displayRecords],
   );
 
   useEffect(() => {
@@ -204,12 +219,15 @@ export default function TerrainMap(props: Props) {
         minZoom: 3,
         maxZoom: 15,
         renderWorldCopies: false,
-        pixelRatio: qualityRef.current === "low" ? 1 : terrainPixelRatio(
-          host.current.clientWidth,
-          host.current.clientHeight,
-        ),
-        maxTileCacheZoomLevels: 5,
-        maxTileCacheSize: 160,
+        pixelRatio:
+          qualityRef.current === "low"
+            ? 1
+            : terrainPixelRatio(
+                host.current.clientWidth,
+                host.current.clientHeight,
+              ),
+        maxTileCacheZoomLevels: 3,
+        maxTileCacheSize: 48,
         cancelPendingTileRequestsWhileZooming: true,
         attributionControl: { compact: true },
         canvasContextAttributes: { antialias: true },
@@ -297,7 +315,9 @@ export default function TerrainMap(props: Props) {
             },
             {
               id: "satellite-texture",
-              layout: {visibility: qualityRef.current === "low" ? "none" : "visible"},
+              layout: {
+                visibility: qualityRef.current === "low" ? "none" : "visible",
+              },
               type: "raster",
               source: "imagery",
               minzoom: 8,
@@ -347,7 +367,10 @@ export default function TerrainMap(props: Props) {
               },
             },
           ],
-          terrain: { source: "elevation", exaggeration: qualityRef.current === "low" ? 1 : 1.5 },
+          terrain: {
+            source: "elevation",
+            exaggeration: qualityRef.current === "low" ? 1 : 1.5,
+          },
           sky: {
             "sky-color": "#789bb8",
             "horizon-color": "#d6ccb7",
@@ -364,6 +387,34 @@ export default function TerrainMap(props: Props) {
       return;
     }
     mapRef.current = map;
+    // Native navigation buttons also use instant moves in low quality.
+    const instantNavigation = (event: MouseEvent) => {
+      if (qualityRef.current !== "low" || !(event.target instanceof Element))
+        return;
+      const button = event.target.closest("button");
+      if (!button) return;
+      const delta = button.classList.contains("maplibregl-ctrl-zoom-in")
+        ? 1
+        : button.classList.contains("maplibregl-ctrl-zoom-out")
+          ? -1
+          : 0;
+      const compass = button.classList.contains("maplibregl-ctrl-compass");
+      if (!delta && !compass) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      map.jumpTo(
+        delta
+          ? {
+              zoom: Math.min(
+                map.getMaxZoom(),
+                Math.max(map.getMinZoom(), map.getZoom() + delta),
+              ),
+            }
+          : { bearing: 0, pitch: 0 },
+      );
+    };
+    const container = map.getContainer();
+    container.addEventListener("click", instantNavigation, true);
     map.addControl(
       new NavigationControl({ visualizePitch: true }),
       "top-right",
@@ -603,7 +654,13 @@ export default function TerrainMap(props: Props) {
           "circle-pitch-alignment": "map",
         },
       });
-      const motion = (moving: boolean) => host.current?.dispatchEvent(new CustomEvent("siaga-map-motion", {bubbles:true,detail:moving}));
+      const motion = (moving: boolean) =>
+        host.current?.dispatchEvent(
+          new CustomEvent("siaga-map-motion", {
+            bubbles: true,
+            detail: moving,
+          }),
+        );
       map.on("movestart", () => motion(true));
       map.on("moveend", () => motion(false));
       map.on("click", (e) => {
@@ -644,10 +701,13 @@ export default function TerrainMap(props: Props) {
     });
     const observer = new ResizeObserver(() => {
       if (!host.current) return;
-      const ratio = qualityRef.current === "low" ? 1 : terrainPixelRatio(
-        host.current.clientWidth,
-        host.current.clientHeight,
-      );
+      const ratio =
+        qualityRef.current === "low"
+          ? 1
+          : terrainPixelRatio(
+              host.current.clientWidth,
+              host.current.clientHeight,
+            );
       if (Math.abs(map.getPixelRatio() - ratio) > 0.01)
         map.setPixelRatio(ratio);
       else map.resize();
@@ -656,6 +716,7 @@ export default function TerrainMap(props: Props) {
     return () => {
       window.clearInterval(timer);
       observer.disconnect();
+      container.removeEventListener("click", instantNavigation, true);
       map.remove();
       mapRef.current = null;
     };
@@ -668,7 +729,10 @@ export default function TerrainMap(props: Props) {
       map.setLayoutProperty(
         id,
         "visibility",
-        surface === "satellite" && (id !== "satellite-texture" || quality !== "low") ? "visible" : "none",
+        surface === "satellite" &&
+          (id !== "satellite-texture" || quality !== "low")
+          ? "visible"
+          : "none",
       );
     }
     map.setLayoutProperty(
@@ -682,8 +746,26 @@ export default function TerrainMap(props: Props) {
       "hillshade-exaggeration",
       surface === "satellite" ? 0.58 : 0.62,
     );
-    map.setPixelRatio(quality === "low" ? 1 : terrainPixelRatio(host.current?.clientWidth ?? 1,host.current?.clientHeight ?? 1));
-    map.setTerrain({source:"elevation",exaggeration:quality === "low"?1:relief});
+    if (quality === "low") map.stop();
+    map.setSky({
+      "sky-color": "#789bb8",
+      "horizon-color": "#d6ccb7",
+      "fog-color": "#95a5ac",
+      "fog-ground-blend": quality === "low" ? 0 : 1,
+      "atmosphere-blend": quality === "low" ? 0 : 1,
+    });
+    map.setPixelRatio(
+      quality === "low"
+        ? 1
+        : terrainPixelRatio(
+            host.current?.clientWidth ?? 1,
+            host.current?.clientHeight ?? 1,
+          ),
+    );
+    map.setTerrain({
+      source: "elevation",
+      exaggeration: quality === "low" ? 1 : relief,
+    });
   }, [ready, surface, quality, relief]);
 
   useEffect(() => {
@@ -777,7 +859,7 @@ export default function TerrainMap(props: Props) {
         padding: { top: 125, bottom: 135, left: 30, right: 40 },
         pitch: 25,
         bearing: 0,
-        duration: duration(),
+        duration: duration(qualityRef.current === "low"),
       },
     );
     setFocus("Indonesia");
@@ -806,7 +888,7 @@ export default function TerrainMap(props: Props) {
           pitch: 48,
           bearing: 0,
           maxZoom: 10,
-          duration: duration(),
+          duration: duration(qualityRef.current === "low"),
         });
         setFocus(props.selected);
       }
@@ -832,12 +914,14 @@ export default function TerrainMap(props: Props) {
         className="terrain-gl"
         aria-label="Peta relief 3D interaktif"
       />
-      <div className="terrain-atmosphere" aria-hidden="true" />
+      {quality !== "low" && (
+        <div className="terrain-atmosphere" aria-hidden="true" />
+      )}
       <SelectedFireEffects
         map={ready ? mapRef.current : null}
         records={props.records}
         selected={props.selected}
-        visible={props.showMarkers && quality !== "low"}
+        visible={props.showMarkers}
       />
       <div
         className="terrain-destinations"
@@ -868,7 +952,7 @@ export default function TerrainMap(props: Props) {
                     ...place,
                     padding: 0,
                     pitch: 64,
-                    duration: duration(),
+                    duration: duration(qualityRef.current === "low"),
                   });
                   setFocus(place.name);
                 }}
@@ -978,7 +1062,10 @@ export default function TerrainMap(props: Props) {
             <button
               aria-label="Hadap utara"
               onClick={() =>
-                mapRef.current?.easeTo({ bearing: 0, duration: duration() })
+                mapRef.current?.easeTo({
+                  bearing: 0,
+                  duration: duration(qualityRef.current === "low"),
+                })
               }
             >
               {bearing}° N
@@ -988,7 +1075,8 @@ export default function TerrainMap(props: Props) {
             Relief{" "}
             <select
               aria-label="Pengali tinggi relief"
-              value={relief}
+              disabled={quality === "low"}
+              value={quality === "low" ? 1 : relief}
               onChange={(e) => {
                 const value = Number(e.target.value);
                 setRelief(value);

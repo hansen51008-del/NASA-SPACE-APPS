@@ -44,6 +44,10 @@ try {
       });
     await page.goto(url);
     await page.locator(".risk-score").waitFor();
+    await page.waitForFunction(
+      () =>
+        document.querySelector("main")?.getAttribute("aria-busy") === "false",
+    );
     assert.equal(requests.length, 0, "No weather request on home");
     const originalScore = await page.locator(".risk-score").innerText();
     await page
@@ -58,6 +62,7 @@ try {
     });
     assert((await opener.boundingBox()).height >= 44);
     await opener.click();
+    await page.locator(".observation-picker > button").first().click();
     if (!live) await page.locator(".weather-loading").waitFor();
     const panel = page.getByRole("region", {
       name: "Rincian observasi",
@@ -116,6 +121,7 @@ try {
       "Focus returns to opener",
     );
     await opener.click();
+    await page.locator(".observation-picker > button").first().click();
     await page.locator(".weather-temperature").waitFor();
     assert.equal(requests.length, 1, "Reopening uses cache");
     await page.keyboard.press("Escape");
@@ -127,6 +133,7 @@ try {
         .click();
       await page.getByRole("button", { name: "2D", exact: true }).click();
       await opener.click();
+      await page.locator(".observation-picker > button").first().click();
       await page.locator(".weather-temperature").waitFor();
       assert.equal(requests.length, 1, "Reload uses session cache");
       await page.keyboard.press("Escape");
@@ -142,6 +149,7 @@ try {
         .click();
       await page.getByRole("button", { name: "2D", exact: true }).click();
       await opener.click();
+      await page.locator(".observation-picker > button").first().click();
       await page
         .getByText("Cuaca tidak tersedia. Data hotspot tetap berlaku.", {
           exact: true,
@@ -180,6 +188,7 @@ try {
       await page.getByRole("button", { name: "3D", exact: true }).click();
       await page.locator('.terrain-view[data-ready="true"]').waitFor();
       await opener.click();
+      await page.locator(".observation-picker > button").first().click();
       await page.locator(".weather-temperature").waitFor();
       await page.keyboard.press("Escape");
     }

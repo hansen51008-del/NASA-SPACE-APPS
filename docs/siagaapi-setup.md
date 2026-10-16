@@ -1,5 +1,45 @@
 # SiagaApi — data dan batas prototype
 
+## Asisten AI (Groq)
+
+Tab Asisten AI menggunakan proxy Node `api/chat.ts` di Vercel. **GROQ_API_KEY** wajib hanya untuk jawaban AI, dan **GROQ_MODEL** opsional (default `openai/gpt-oss-120b`, diverifikasi di [dokumentasi model resmi](https://console.groq.com/docs/model/openai/gpt-oss-120b) pada 16 Oktober 2026). Jangan memakai awalan `VITE_`, memasukkan key ke URL, source, cache, log, screenshot, atau Git. Tanpa key, FAQ/fakta/konteks tetap tersedia dan input menampilkan “Asisten AI sedang tidak tersedia.”
+
+Untuk lokal, simpan environment pada proses server. Contoh PowerShell tanpa menulis nilai key ke riwayat perintah:
+
+```powershell
+$siagaChatSecret = Read-Host 'Key Groq' -AsSecureString
+$env:GROQ_API_KEY = [System.Net.NetworkCredential]::new('', $siagaChatSecret).Password
+$env:GROQ_MODEL = 'openai/gpt-oss-120b'
+Remove-Variable siagaChatSecret
+npm.cmd run dev
+# Setelah server dihentikan:
+Remove-Item Env:GROQ_API_KEY
+```
+
+Jalankan di folder proyek dan hentikan server lama dengan Ctrl+C dahulu. Saat prompt `Key Groq` muncul, tempel key lalu Enter; input disamarkan dan tidak menjadi perintah dalam riwayat PowerShell. Environment ini berlaku pada terminal tersebut dan proses server yang dijalankannya; ulangi penyiapan bila membuka terminal baru.
+
+GPT-OSS memakai `reasoning_effort: low` dan `include_reasoning: false`; hanya teks jawaban diteruskan ke browser. Batas `max_completion_tokens` mencakup reasoning dan jawaban, sehingga diberi ruang 2.048 token. Completion tanpa teks jawaban ditampilkan sebagai kegagalan yang bisa dicoba ulang, bukan balasan kosong.
+
+Middleware Vite menjalankan handler yang sama di `/api/chat`; `npm run dev`, `dev:lan`, dan `preview` tetap bekerja. Alternatifnya gunakan `.env.local` yang diabaikan Git; middleware hanya membaca variabel berawalan `GROQ_` di Node, tidak menyuntikkannya ke bundle. Restart server setelah mengganti environment. `GET /api/chat` hanya mengembalikan status boolean ketersediaan, tidak key atau model rahasia. `npm run preview -- --port 4173 --strictPort` dapat dipakai untuk menguji UI tanpa key.
+
+Di dashboard Vercel, set `GROQ_API_KEY` dan bila perlu `GROQ_MODEL` untuk environment yang sesuai sebelum deploy berikutnya. `vercel.json` tetap memakai `npm run sync:firms; npm run build` dan `dist`; tidak ada rewrite yang menelan `/api/*`. Vercel menjalankan `api/chat.ts` sebagai fungsi terpisah dari aset statis. Hosting yang hanya menyajikan folder `dist` tidak menyediakan proxy; tab tetap menampilkan keadaan tidak tersedia. Penambahan ini tidak melakukan deploy.
+
+Server mengirim `POST https://api.groq.com/openai/v1/chat/completions`, `stream: true`, Bearer auth, lalu meneruskan hanya delta teks SSE; format mengikuti [Chat Completions](https://console.groq.com/docs/api-reference) dan [streaming resmi](https://console.groq.com/docs/text-chat). Model dapat diganti lewat environment sesuai akses akun, bukan dari browser. Tidak ada akses pencarian web atau alat eksternal dalam percakapan.
+
+Batas yang diterapkan server: 12 pesan riwayat, 2.000 karakter per pesan, total 12.000 karakter, body 50.000 byte, konteks maksimal 2.048 karakter, maksimum 2.048 token completion (termasuk reasoning), timeout 30 detik, serta 8 permintaan per IP per menit. Hanya role user/assistant diterima; system prompt dibuat server dan tidak dapat diganti oleh payload. Origin browser harus sama. Pesan error generik; body error upstream dan isi percakapan tidak dicatat. Batas IP memakai memori proses dan header IP Vercel yang disediakan platform (socket pada lokal); batas ini perkiraan, dapat reset saat cold start dan tidak berlaku global antar-instance. Ini bukan pengganti kuota/budget penyedia atau proteksi edge untuk trafik publik besar.
+
+Kuota dan biaya Groq mengikuti paket akun, model, dan token termasuk riwayat yang dikirim ulang; pantau pemakaian di konsol Groq. Stop meng-abort permintaan server ke upstream tetapi token yang sudah diproses dapat tetap dihitung. Pengujian repo memakai mock saja dan tidak memanggil layanan Groq berbayar. Key valid, akses model, biaya nyata, serta perilaku deploy Vercel memerlukan verifikasi tersendiri.
+
+Privasi: pesan dan ringkasan wilayah/periode/indikator/faktor/sumber/cakupan dikirim ke Groq melalui server aplikasi. Tidak melampirkan observasi mentah maupun lokasi presisi. Riwayat ada di memori halaman, hilang saat muat ulang; aplikasi tidak menyimpan chat di server. Jangan mengirim data pribadi. Perlakuan data oleh penyedia mengikuti kebijakan Groq. Jawaban AI dapat keliru, bukan sumber resmi BNPB/BPBD/NASA; skor tetap heuristik prototype, bukan prediksi. Arahan bahaya mengikuti BPBD/pemerintah dan [112 jika layanan aktif setempat](https://layanan112.komdigi.go.id/faq).
+
+Verifikasi: `npm test`, `npm run build`, lalu preview port 4173 dan `node tests/assistant-browser.mjs`. Browser test memock jawaban streaming, stop/retry, keadaan tanpa key, teks HTML yang harus tetap inert, dan layout 360/1280 px.
+
+## Kualitas peta dan replay
+
+Pilih **Kualitas rendah** pada panel Sensor & filter. Pilihan dibagi antara peta 2D/3D, disimpan di localStorage bila tersedia, dan dapat dikembalikan seketika. Indikator risiko, seluruh observasi analitis, anomali dan CSV tidak disederhanakan. Mode ini memakai DPR 1, maksimum 6 api/12 fps, simbol SVG statis, sel tampilan 0,08°, tanpa detail Sentinel-2/kabut dekoratif dan tanpa transisi kamera terprogram. Budget cache tile bersama diperkecil ke 48 per sumber dan 3 tingkat zoom tanpa membangun ulang peta.
+
+Replay berjalan lewat RAF, menunggu analisis worker dan berhenti ketika halaman/peta tidak terlihat. Monitor lag memakai jendela 3 detik, median dan proporsi frame lambat, pemulihan 2 detik serta cooldown 30 detik. Petunjuk hardwareConcurrency/deviceMemory/Save-Data hanya menurunkan durasi bukti menjadi 2,5 detik; tetap harus ada frame lambat yang terukur. Pengguna mendapat banner opsional dan dapat menolaknya untuk seluruh sesi. Tidak ada pengalihan otomatis atau telemetri. Lihat [hasil pengukuran dan keterbatasan benchmark](./performance.md).
+
 ## Menjalankan
 
 Node.js 20.19+ atau 22.12+ diperlukan. Dari root proyek:
@@ -36,6 +76,8 @@ Pada server/CI, injeksikan environment variable dari secret manager lalu jalanka
 3. Parser bersama memvalidasi CSV, menormalisasi confidence, menyaring titik di luar poligon Indonesia, menetapkan provinsi, dan mempertahankan produk, satelit, versi, baris sumber, serta waktu observasi. Bila salah satu produk gagal atau baris tidak valid, cache lama tidak diganti.
 4. Cache `public/data/firms-cache.json` berisi CSV observasi publik dan metadata waktu/cakupan, **tanpa key maupun URL ber-key**. Cache publik ini sengaja dimasukkan ke commit agar deploy statis memakai observasi nyata meskipun sinkronisasi tidak tersedia. Untuk memperbarui salinan di repositori, jalankan `npm run sync:firms`, periksa bahwa cache hanya berisi data publik, lalu commit ulang cache. Key tetap server-side dan tidak pernah di-commit. File sementara `*.tmp` tetap diabaikan Git. Cache diganti setelah kedua produk tervalidasi; tidak digabung dengan data sintetis.
 5. `observationProvider.ts` membaca cache dan menormalisasi observasi ke schema yang sudah digunakan peta. Cache hilang, tidak valid, atau gagal dimuat menghasilkan data sintetis berlabel **Mode Demo**. Tidak ada key = tidak ada request NASA dari skrip. Cache hasil sinkronisasi lama yang masih ada tetap dapat dibaca, dengan waktunya terlihat.
+6. Analisis tampilan berjalan dalam `analysis.worker.ts`, memakai rumus dan layanan yang sama; cache hasil dibatasi dan memperhitungkan batas kedaluwarsa FIRMS. Kualitas visual tidak menjadi masukan perhitungan.
+7. Peta, cache FIRMS, dan berita tetap dapat disajikan statis. **Asisten AI** menambahkan backend terbatas di `api/chat.ts` untuk meneruskan chat ke Groq; bukan backend pelaporan darurat. Tidak ada akun atau database percakapan.
 
 Key tidak pernah dibaca frontend. Error sinkronisasi tidak mencetak URL, key, atau isi respons upstream. Pengujian API menggunakan fixture dan tidak membuktikan request NASA berhasil; keberhasilan nyata baru ditandai saat sinkronisasi dengan key valid selesai.
 

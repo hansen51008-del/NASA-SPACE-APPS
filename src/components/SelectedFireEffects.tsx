@@ -3,6 +3,7 @@ import { Marker, type Map as TerrainMap } from "maplibre-gl";
 import type { Hotspot } from "../types";
 import "../selected-fire.css";
 import { createFireRenderer, fireCanvasSize } from "./fireRenderer";
+import { useMapQuality, qualityDisplay } from "./MapQuality";
 
 export function selectedFireSites(records: Hotspot[], selected: string) {
   const occupied = new Set<string>();
@@ -35,13 +36,21 @@ export default function SelectedFireEffects({
   selected: string;
   visible: boolean;
 }) {
+  const { quality } = useMapQuality();
+  const { fireCount, fireFps } = qualityDisplay(quality);
   const shared = useRef<ReturnType<typeof createFireRenderer> | null>(null);
-  useEffect(() => () => {shared.current?.dispose();shared.current=null;}, [map, visible]);
+  useEffect(
+    () => () => {
+      shared.current?.dispose();
+      shared.current = null;
+    },
+    [map, visible],
+  );
   useEffect(() => {
     if (!map || !visible || selected === "Indonesia") return;
-    const sites = selectedFireSites(records, selected);
+    const sites = selectedFireSites(records, selected).slice(0, fireCount);
     if (!sites.length) return;
-    const renderer = shared.current ??= createFireRenderer();
+    const renderer = (shared.current ??= createFireRenderer());
     const canvases: CanvasRenderingContext2D[] = [];
     const markers = sites.map((record, index) => {
       const element = document.createElement("div");
@@ -123,7 +132,7 @@ export default function SelectedFireEffects({
     let inView = true;
     let reducedMotion = motion.matches;
     const draw = (now: number) => {
-      if (now - previous >= 1000 / 24 || reducedMotion) {
+      if (now - previous >= 1000 / fireFps || reducedMotion) {
         const drawable = canvases
           .map((ctx, index) => ({ ctx, index }))
           .filter(
@@ -190,6 +199,6 @@ export default function SelectedFireEffects({
       map.off("resize", cameraChanged);
       markers.forEach((marker) => marker.remove());
     };
-  }, [map, records, selected, visible]);
+  }, [map, records, selected, visible, fireCount, fireFps]);
   return null;
 }

@@ -94,8 +94,8 @@ try {
     await page.goto(url);
     await page.locator(".risk-score").waitFor();
     assert.equal(newsRequests, 0, "No news request before opening the tab");
-    assert.equal(await page.getByRole("tab").count(), 4);
-    await tab("Beranda").press("End");
+    assert.equal(await page.getByRole("tab").count(), 5);
+    await tab("Berita").click();
     await page.locator(".news-item").waitFor();
     assert.equal(await tab("Berita").getAttribute("aria-selected"), "true");
     assert.match(

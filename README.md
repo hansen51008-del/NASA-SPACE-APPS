@@ -141,6 +141,22 @@ Gunakan sinkronisasi server-side dan penyedia cache yang sudah diimplementasikan
 
 Referensi: [atribut MODIS NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/descriptions/FIRMS_MODIS_Firehotspots.html), [tutorial API NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html), [panduan keyakinan sensor NASA](https://forum.earthdata.nasa.gov/viewtopic.php?t=5182).
 
+## Performa peta dan kualitas rendah
+
+Tombol **Kualitas rendah** berada di panel **Sensor & filter** pada Peta aktivitas, berlaku untuk 2D dan 3D, dan mengingat pilihan di perangkat bila penyimpanan browser tersedia. Resolusi 3D menjadi 1×, citra detail Sentinel-2 dan kabut dekoratif dimatikan, gerakan kamera terprogram tidak dianimasikan, simbol 2D menjadi statis, sel tampilan diperbesar dari 0,04° ke 0,08°, dan efek api provinsi dibatasi 6 buah pada maksimal 12 fps. Kembali ke kualitas biasa memulihkan tampilan; tidak perlu memuat ulang halaman. Pilihan 2D tetap tersedia. Angka, indikator risiko, anomali, dan ekspor CSV memakai seluruh data yang sama, terlepas dari kualitas tampilan.
+
+Replay memakai `requestAnimationFrame`, menunggu hasil worker dan menjeda saat tab browser atau peta tidak terlihat. Perhitungan memakai layanan yang sama di Web Worker dengan cache kombinasi filter. Pendeteksi lag hanya bekerja ketika peta terlihat dan aktif; median waktu frame, proporsi frame lambat, hysteresis, cooldown, serta petunjuk perangkat menghasilkan **saran**, tidak pernah perubahan otomatis. Penolakan disimpan selama sesi. Tidak ada telemetri performa. Hasil ukur dan keterbatasan lingkungan pengujian ada di [catatan performa](./docs/performance.md).
+
+## Asisten AI
+
+Tab **Asisten AI** membantu memahami indikator dan kesiapsiagaan dengan Groq (GPT-OSS 120B). Sambutan, konteks wilayah, fakta singkat, dan FAQ statis tetap tersedia tanpa layanan AI. Percakapan mendukung jawaban bertahap, berhenti, coba lagi, salin, dan percakapan baru. Pemformatan dibatasi pada teks/baris dan penebalan aman; HTML dari model tidak dieksekusi.
+
+Browser mengirim pesan, sebagian riwayat, dan konteks ringkas (wilayah, periode, indikator/faktor, sumber, cakupan) ke `/api/chat`, lalu server meneruskannya ke Groq. Titik hotspot mentah dan lokasi presisi pengguna tidak dilampirkan. Jangan kirim data pribadi. Aplikasi tidak menyimpan isi percakapan di server atau log; riwayat UI hanya berada di memori halaman. Pemrosesan di penyedia mengikuti [ketentuan privasi API Groq](https://console.groq.com/docs/your-data).
+
+Key **GROQ_API_KEY** hanya berada di environment server, tanpa awalan `VITE_`. **GROQ_MODEL** opsional; default `openai/gpt-oss-120b` diperiksa pada [daftar model resmi](https://console.groq.com/docs/model/openai/gpt-oss-120b), 16 Oktober 2026. Proxy memakai [Chat Completions](https://console.groq.com/docs/api-reference) dengan SSE. Tidak ada dependency baru. Penyiapan lokal/Vercel, batas biaya, dan rate limit dijelaskan di [panduan penyiapan](./docs/siagaapi-setup.md#asisten-ai-groq).
+
+Jawaban AI bisa keliru, bukan sumber resmi BNPB/BPBD/NASA, dan tidak mengubah skor. Skor tetap heuristik prototype yang belum tervalidasi. Dalam bahaya ikuti BPBD/pemerintah; [layanan 112](https://layanan112.komdigi.go.id/faq) digunakan bila aktif di daerah tersebut. Asisten tidak boleh mengarang rute, titik bantuan, atau pengumuman resmi. Model tidak melakukan pencarian berita langsung.
+
 ## Berita dan pembaruan observasi
 
 Tab **Berita** memuat dua jenis informasi yang dibedakan dengan jelas. **Berita** berasal dari RSS/Atom penerbit: hanya judul, nama sumber, tautan, tanggal publikasi, ringkasan teks maksimal 200 karakter, serta tag provinsi. Artikel penuh dan gambar tidak disalin. Hak konten tetap pada penerbit; gunakan tautan **Baca di sumber asal**. **Pembaruan observasi** dihitung dari dataset aplikasi menggunakan `riskService` dan harmonisasi yang sudah ada, mengikuti wilayah dan periode pilihan. Ringkasan ini bukan berita dan bukan konfirmasi kebakaran. Mode Demo tetap berlabel; cache observasi lebih dari 7 hari atau periode tanpa cakupan menghasilkan **Belum dapat dinilai**, bukan Aman.

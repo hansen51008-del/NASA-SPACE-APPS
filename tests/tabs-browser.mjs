@@ -15,6 +15,10 @@ try {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(url);
     await page.locator(".risk-score").waitFor();
+    await page.waitForFunction(
+      () =>
+        document.querySelector("main")?.getAttribute("aria-busy") === "false",
+    );
     assert.equal(await tab("Beranda").getAttribute("aria-selected"), "true");
     assert.equal(
       await page.locator(".workspace").count(),
@@ -78,6 +82,7 @@ try {
       "Peta aktivitas",
       "Data & analitik",
       "Berita",
+      "Asisten AI",
     ]) {
       await tab(name).click();
       assert.equal(await page.getByRole("tabpanel").count(), 1);
@@ -122,13 +127,13 @@ try {
       "true",
     );
     await tab("Peta aktivitas").press("End");
-    assert.equal(await tab("Berita").getAttribute("aria-selected"), "true");
-    await tab("Berita").press("Home");
+    assert.equal(await tab("Asisten AI").getAttribute("aria-selected"), "true");
+    await tab("Asisten AI").press("Home");
     assert.equal(await tab("Beranda").getAttribute("aria-selected"), "true");
   }
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: four tabs, home-first, CTA, keyboard, shared filters, preserved checklist/map, no URL change, 360px/1440px layout and touch targets.",
+    "PASS: five tabs, home-first, CTA, keyboard, shared filters, preserved checklist/map, no URL change, 360px/1440px layout and touch targets.",
   );
 } finally {
   await browser.close();

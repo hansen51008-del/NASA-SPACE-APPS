@@ -1,9 +1,7 @@
 .app-content[data-intro="true"] {
   visibility: hidden;
 }
-.app-content:focus {
-  outline: none;
-}
+.app-content:focus,
 .app-intro:focus {
   outline: none;
 }
@@ -14,83 +12,309 @@
   display: grid;
   place-items: center;
   min-height: 100dvh;
-  padding: 32px 24px 120px;
+  overflow: hidden;
+  padding: 32px 24px;
   background: var(--bg, #24292d);
   color: #f3efea;
-  animation: intro-exit 180ms ease-in 1220ms both;
+  animation: intro-exit 240ms ease-in 2160ms both;
 }
 .app-intro-brand {
   display: grid;
   justify-items: center;
   text-align: center;
-  animation: intro-arrive 500ms ease-out both;
+  isolation: isolate;
 }
 .app-intro-mark {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 80px;
-  height: 86px;
-  margin-bottom: 24px;
-  border-radius: 20px 20px 20px 7px;
-  background: #ed9b60;
+  width: 112px;
+  height: 120px;
+  margin-bottom: 32px;
+  border-radius: 28px 28px 28px 9px;
   color: #30231c;
+  border: 1px solid #ee9a6040;
+  background: #302a26;
+  animation: intro-forge-mark 1800ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.app-intro-glow {
+  position: absolute;
+  z-index: -1;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    #e87d2750,
+    #ed702a16 48%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: intro-glow 1900ms ease-in-out both;
+}
+.app-intro-final-flame {
+  opacity: 0;
+  animation: intro-seal 420ms ease-out 1420ms both;
+}
+.app-intro-blast {
+  position: absolute;
+  bottom: 22px;
+  left: -24px;
+  width: 160px;
+  height: 160px;
+  border-radius: 48% 52% 40% 44%;
+  background: radial-gradient(
+    ellipse at 50% 75%,
+    #ffba55b0,
+    #ed5d2a70 38%,
+    #c4431520 62%,
+    transparent 74%
+  );
+  transform-origin: 50% 90%;
+  pointer-events: none;
+  animation: intro-blast 1100ms ease-out 480ms both;
+}
+.app-intro-blast::before,
+.app-intro-blast::after {
+  content: "";
+  position: absolute;
+  inset: 10% 26% 0;
+  border-radius: 80% 20% 50% 50%;
+  background: linear-gradient(0deg, #f37a3040, #ed6a2220 65%, transparent);
+  transform-origin: bottom;
+  transform: rotate(-28deg);
+}
+.app-intro-blast::after {
+  transform: rotate(28deg);
+}
+.app-intro-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.app-intro-burst i {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  width: 3px;
+  height: 12px;
+  border-radius: 70% 30% 65% 35%;
+  background: linear-gradient(#ffe2a4, #f68c38 60%, transparent);
+  box-shadow: 0 0 7px #ed8d4566;
+  animation: intro-spark-burst 1050ms cubic-bezier(0.12, 0.65, 0.25, 1)
+    calc(580ms + var(--i) * 13ms) both;
+}
+.app-intro-burst i:nth-child(3n) {
+  width: 2px;
+  height: 7px;
+}
+.app-intro-fire {
+  position: absolute;
+  left: -4px;
+  bottom: 15px;
+  width: 120px;
+  height: 160px;
+  transform-origin: 50% 95%;
+  pointer-events: none;
+  animation: intro-fire-bloom 1800ms ease-out both;
+}
+.app-intro-flame {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 3px 8px #ef772a38);
+  transform-origin: 50% 95%;
+  animation: intro-flame-rise 540ms ease-in-out infinite alternate;
+}
+.app-intro-flame path {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.intro-flame-left {
+  animation: intro-tongue 460ms ease-in-out -180ms infinite alternate;
+}
+.intro-flame-right {
+  animation: intro-tongue 570ms ease-in-out -340ms infinite alternate-reverse;
+}
+.intro-flame-inner {
+  animation: intro-tongue 380ms ease-in-out -100ms infinite alternate;
+}
+.intro-flame-core {
+  animation: intro-tongue 310ms ease-in-out infinite alternate-reverse;
+}
+.app-intro-ember {
+  position: absolute;
+  left: calc(20% + var(--i) * 8%);
+  bottom: 30px;
+  width: 3px;
+  height: 6px;
+  border-radius: 65% 35% 60% 40%;
+  background: #ffcc87;
+  box-shadow: 0 0 6px #ed8d4555;
+  animation: intro-ember-rise 1100ms ease-out calc(var(--i) * -135ms) infinite;
+}
+.app-intro-ember:nth-of-type(even) {
+  width: 2px;
+  height: 4px;
+  background: #f49b52;
 }
 .app-intro h1 {
+  display: flex;
   font-family: "DM Sans", sans-serif;
-  font-size: clamp(36px, 6vw, 48px);
+  font-size: clamp(42px, 6vw, 56px);
   font-weight: 650;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
   line-height: 1.15;
+  margin: 0;
 }
-.app-intro p {
-  margin-top: 14px;
-  color: #bec5cb;
-  font-size: 14px;
-  line-height: 1.6;
+.app-intro h1 span {
+  display: inline-block;
+  animation: intro-letter 520ms cubic-bezier(0.2, 0.7, 0.2, 1)
+    calc(420ms + var(--i) * 45ms) both;
 }
-.app-intro-rule {
-  width: 32px;
-  height: 2px;
-  margin-top: 28px;
-  background: #ed9b60;
+@keyframes intro-forge-mark {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.72);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  65% {
+    background: #392e26;
+    border-color: #ed9b6080;
+  }
+  100% {
+    background: #ed9b60;
+    border-color: #ed9b60;
+    transform: scale(1);
+  }
 }
-.app-intro-footer {
-  position: absolute;
-  bottom: max(28px, env(safe-area-inset-bottom));
-  left: 24px;
-  right: 24px;
-  display: grid;
-  justify-items: center;
-  gap: 8px;
+@keyframes intro-fire-bloom {
+  0% {
+    opacity: 0;
+    transform: translateY(32px) scale(0.15, 0.08);
+  }
+  24% {
+    opacity: 1;
+    transform: translateY(6px) scale(0.45, 0.55);
+  }
+  36% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.2, 1.5);
+  }
+  52% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.1, 1.4);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(-4px) scale(0.85, 1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(36px) scale(0.3, 0.2);
+  }
 }
-.app-intro-footer > span {
-  font-size: 11px;
-  color: #a4aeb7;
+@keyframes intro-blast {
+  0% {
+    opacity: 0;
+    transform: scale(0.25, 0.15);
+  }
+  16% {
+    opacity: 0.85;
+    transform: translateY(-10px) scale(1.05, 1.2);
+  }
+  45% {
+    opacity: 0.5;
+    transform: translateY(-34px) scale(1.2, 1.45);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-75px) scale(1, 1.6);
+  }
 }
-.app-intro button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 10px 16px;
-  border: 1px solid #56606a;
-  border-radius: 8px;
-  color: #e9ded3;
-  background: transparent;
-  font-size: 12px;
+@keyframes intro-spark-burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  12% {
+    opacity: 1;
+  }
+  58% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift), calc(-1 * var(--rise))) rotate(25deg)
+      scale(0.2);
+  }
 }
-.app-intro button:hover {
-  background: #30363d;
+@keyframes intro-flame-rise {
+  from {
+    transform: scale(1.02, 0.94) skewX(-2deg);
+  }
+  to {
+    transform: scale(0.96, 1.06) skewX(2deg);
+  }
 }
-@keyframes intro-arrive {
+@keyframes intro-tongue {
+  from {
+    transform: scale(0.92, 0.88) skewX(-4deg);
+  }
+  to {
+    transform: scale(1.04, 1.1) skewX(4deg);
+  }
+}
+@keyframes intro-ember-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.8);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc((var(--i) - 3) * 10px), -160px) scale(0.2);
+  }
+}
+@keyframes intro-glow {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes intro-seal {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: scale(0.6);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes intro-letter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
   }
 }
 @keyframes intro-exit {
@@ -103,7 +327,19 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .app-intro,
-  .app-intro-brand {
-    animation: none;
+  .app-intro * {
+    animation: none !important;
+  }
+  .app-intro-fire,
+  .app-intro-glow,
+  .app-intro-blast,
+  .app-intro-burst {
+    display: none;
+  }
+  .app-intro-mark {
+    background: #ed9b60;
+  }
+  .app-intro-final-flame {
+    opacity: 1;
   }
 }

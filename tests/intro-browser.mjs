@@ -30,9 +30,42 @@ try {
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await page.locator(".app-intro").waitFor();
     await page.clock.runFor(550);
-    // Capture the settled entrance; the auto-dismiss timer remains paused.
+    assert.equal(await page.locator(".app-intro").textContent(), "SiagaApi");
+    assert.equal(
+      await page
+        .getByRole("heading", { name: "SiagaApi", exact: true })
+        .count(),
+      1,
+    );
+    assert.equal(await page.locator(".app-intro button").count(), 0);
+    assert.equal(
+      await page
+        .locator(".app-intro-flame")
+        .evaluate((el) => getComputedStyle(el).animationName),
+      "intro-flame-rise",
+    );
+    // Inspect the upward burst while the auto-dismiss timer remains paused.
     await page.locator(".app-intro-brand").evaluate((element) => {
-      for (const animation of element.getAnimations()) animation.finish();
+      for (const animation of element.getAnimations({ subtree: true })) {
+        animation.pause();
+        animation.currentTime = 700;
+      }
+    });
+    const mark = await page.locator(".app-intro-mark").boundingBox();
+    const burst = await page.locator(".app-intro-fire").boundingBox();
+    assert.ok(
+      burst.height > mark.height * 1.5 &&
+        burst.height < mark.height * 2.1 &&
+        burst.y < mark.y - 60,
+      "Fire rises upward without overwhelming the logo",
+    );
+    await page.screenshot({ path: `test-results/intro-burst-${width}.png` });
+    // Inspect the decay and settled logo.
+    await page.locator(".app-intro-brand").evaluate((element) => {
+      for (const animation of element.getAnimations({ subtree: true })) {
+        animation.pause();
+        animation.currentTime = 1100;
+      }
     });
     assert.equal(await page.locator(".app-content").getAttribute("inert"), "");
     assert.equal(
@@ -42,10 +75,16 @@ try {
       true,
     );
     await page.screenshot({ path: `test-results/intro-${width}.png` });
-    await page.clock.runFor(900);
+    await page.locator(".app-intro-brand").evaluate((element) => {
+      for (const animation of element.getAnimations({ subtree: true }))
+        animation.currentTime = 1900;
+    });
+    await page.screenshot({ path: `test-results/intro-settled-${width}.png` });
+    await page.clock.runFor(1900);
     await page.locator(".app-intro").waitFor({ state: "detached" });
     assert.equal(cacheRequested, true, "Data loading starts behind the intro");
     releaseCache();
+    await page.clock.resume();
     await page.locator(".risk-score").waitFor();
     assert.equal(
       await page
@@ -60,13 +99,11 @@ try {
       0,
       "Refresh does not repeat the intro in this tab",
     );
-    // A new session can dismiss with either a button or the keyboard.
+    // Keyboard dismissal remains available without a visible button.
     await page.evaluate(() => sessionStorage.removeItem("siagaapi:intro-seen"));
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.getByRole("button", { name: "Lanjut ke Beranda" }).waitFor();
-    if (width === 360)
-      await page.getByRole("button", { name: "Lanjut ke Beranda" }).click();
-    else await page.keyboard.press("Escape");
+    await page.locator(".app-intro").waitFor();
+    await page.keyboard.press("Escape");
     await page.locator(".app-intro").waitFor({ state: "detached" });
     assert.equal(
       await page.locator(".app-content").getAttribute("inert"),
@@ -94,15 +131,16 @@ try {
       assert.equal(await page.locator(".app-intro").count(), 0);
     } else {
       await page.locator(".app-intro").waitFor();
-      await page.getByRole("button", { name: "Lanjut ke Beranda" }).click();
+      await page.clock.runFor(2500);
     }
+    await page.clock.resume();
     await page.locator(".risk-score").waitFor();
     assert.equal(await page.locator(".app-intro").count(), 0);
     await context.close();
   }
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: intro auto-dismiss, skip, Escape, once per tab session, parallel data loading, blocked storage, reduced motion, desktop/mobile, no runtime errors.",
+    "PASS: logo-only intro, flame animation, auto-dismiss, Escape, once per tab session, parallel data loading, blocked storage, reduced motion, desktop/mobile, no runtime errors.",
   );
 } finally {
   await browser.close();

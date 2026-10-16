@@ -7,7 +7,16 @@ const page = await browser.newPage({
   viewport: { width: 1440, height: 1100 },
   deviceScaleFactor: 1,
 });
-const go = (name) => page.getByRole("tab", { name, exact: true }).click();
+const go = async (name) => {
+  await page.getByRole("tab", { name, exact: true }).click();
+  if (name === "Peta aktivitas") {
+    for (const selector of [".map-period-controls", ".area-section"]) {
+      const panel = page.locator(selector);
+      if ((await panel.getAttribute("open")) === null)
+        await panel.locator("summary").click();
+    }
+  }
+};
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await mkdir("test-results", { recursive: true });
@@ -107,6 +116,7 @@ try {
   await page
     .getByRole("button", { name: "Jelajahi Riau", exact: true })
     .click();
+  await go("Peta aktivitas");
   assert.equal(
     await page.getByLabel("Wilayah pantauan", { exact: true }).inputValue(),
     "Riau",
@@ -164,6 +174,8 @@ try {
       .getAttribute("aria-pressed"),
     "true",
   );
+  if ((await page.locator(".map-period-controls").getAttribute("open")) === null)
+    await page.locator(".map-period-controls > summary").click();
   await page.getByLabel("Tahun observasi").selectOption("2023");
   await page
     .getByRole("button", { name: "Tampilkan Sep", exact: true })

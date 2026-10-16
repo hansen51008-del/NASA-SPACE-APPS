@@ -618,7 +618,7 @@ export default function App() {
                   id="map-location-panel"
                 >
                   <div className="floating-heading">
-                    <h2>Wilayah & periode</h2>
+                    <h2>Jelajahi wilayah</h2>
                     <button
                       className="map-panel-close"
                       aria-label="Tutup panel wilayah"
@@ -627,42 +627,62 @@ export default function App() {
                       <X size={18} />
                     </button>
                   </div>
-                  {contextControls}
-                  {locationControls}
-                  {data && (
-                    <>
-                      <ProvinceSearch
-                        regions={data.boundaries.features
-                          .map((feature) => feature.properties.PROVINSI)
-                          .sort()}
-                        ranking={ranking}
-                        onSelect={setRegion}
+                  <ProvinceSearch
+                    regions={data.boundaries.features
+                      .map((feature) => feature.properties.PROVINSI)
+                      .sort()}
+                    ranking={ranking}
+                    onSelect={setRegion}
+                  />
+                  <div className="map-area-summary">
+                    <span>{region}</span>
+                    <strong>
+                      {hasCoverage ? number(selectedActivity.length) : "?"}
+                      <small> observasi satelit</small>
+                    </strong>
+                  </div>
+                  <details className="map-period-controls">
+                    <summary>Ubah wilayah & periode</summary>
+                    {contextControls}
+                    {locationControls}
+                    {isDemo && (
+                      <FireReplay
+                        month={month}
+                        setMonth={setMonth}
+                        playing={playing}
+                        setPlaying={setPlaying}
+                        counts={counts}
+                        speed={speed}
+                        setSpeed={setSpeed}
+                        year={year}
                       />
-                      {isDemo && (
-                        <FireReplay
-                          month={month}
-                          setMonth={setMonth}
-                          playing={playing}
-                          setPlaying={setPlaying}
-                          counts={counts}
-                          speed={speed}
-                          setSpeed={setSpeed}
-                          year={year}
-                        />
-                      )}
-                    </>
-                  )}
-                  <p className="helper">
-                    Observasi satelit bukan konfirmasi kebakaran. Filter peta
-                    tidak mengubah indikator risiko.
-                  </p>
-                  {sourceDetails}
-                  <button
-                    className="text-button"
-                    onClick={() => setModal("method")}
-                  >
-                    Sumber, atribusi & metode
-                  </button>
+                    )}
+                  </details>
+                  <div className="map-source-compact">
+                    <span className="source-chip">
+                      <span />
+                      {isDemo ? "Mode Demo" : "Cache NASA FIRMS"}
+                    </span>
+                    <span>
+                      {isDemo
+                        ? `${year} ? data sintetis`
+                        : `${coverage?.start} s.d. ${coverage?.end} UTC`}
+                    </span>
+                    <details className="map-data-details">
+                      <summary>Data & batasan</summary>
+                      <p>
+                        Observasi satelit bukan konfirmasi kebakaran. Filter
+                        peta tidak mengubah indikator risiko.
+                      </p>
+                      {sourceDetails}
+                      <button
+                        className="text-button"
+                        onClick={() => setModal("method")}
+                      >
+                        Sumber, atribusi & metode
+                      </button>
+                    </details>
+                  </div>
                 </div>
               )}
               <div className="map-bottom-controls">
@@ -717,7 +737,7 @@ export default function App() {
                       id="map-layer-panel"
                     >
                       <div className="floating-heading">
-                        <h2>Sensor & filter</h2>
+                        <h2>Lapisan peta</h2>
                         <button
                           className="map-panel-close"
                           aria-label="Tutup panel filter"

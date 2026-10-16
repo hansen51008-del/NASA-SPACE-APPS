@@ -39,6 +39,7 @@ try {
       await page
         .getByRole("button", { name: "Wilayah & periode", exact: true })
         .click();
+    await page.locator(".map-period-controls > summary").click();
     await page.getByLabel("Wilayah pemantauan").selectOption("Riau");
     if (width === 360)
       await page

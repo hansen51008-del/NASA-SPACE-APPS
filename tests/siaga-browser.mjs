@@ -50,6 +50,7 @@ try {
   await go("Peta aktivitas");
   await page.getByRole("button", { name: "2D", exact: true }).click();
   assert.equal(await page.locator(".province").count(), 38);
+  await page.locator(".map-period-controls > summary").click();
   await page.getByLabel("Wilayah pemantauan").selectOption("Riau");
   await page.getByLabel("Bulan pemantauan").selectOption("9");
   assert.match(await page.locator(".risk-brief").innerText(), /Riau/);

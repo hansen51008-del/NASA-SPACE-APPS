@@ -28,10 +28,20 @@ Deteksi satelit bukan konfirmasi kejadian kebakaran dan bukan pengukuran luas te
 
 ## Kaitan dengan keberlanjutan
 
-- **SDG 13 — Penanganan Perubahan Iklim:** pola aktivitas dan indikator membantu pembahasan kesiapsiagaan musiman terhadap karhutla.
-- **SDG 15 — Ekosistem Daratan:** pengamatan per wilayah membantu menentukan lokasi yang perlu diperiksa lebih lanjut terkait tekanan pada hutan dan habitat.
+SiagaApi membantu warga di wilayah rawan karhutla memahami observasi satelit NASA FIRMS melalui indikator risiko yang transparan, alasan penilaian, dan langkah kesiapsiagaan yang mudah dipahami.
+
+- **SDG 11:** mendukung kesiapsiagaan dan pengurangan risiko bencana di tingkat warga.
+- **SDG 13:** membantu pembahasan ketahanan terhadap dampak bahaya terkait iklim, termasuk karhutla.
+- **SDG 15:** membantu perhatian awal terhadap tekanan pada ekosistem daratan dan habitat.
 
 Ditujukan terutama bagi warga di wilayah rawan; BPBD, lembaga lingkungan, NGO, peneliti, dan jurnalis dapat mengeksplorasi observasi untuk tindak lanjut yang memerlukan verifikasi lapangan.
+
+### Batas saat ini
+
+- SiagaApi bukan sistem peringatan dini real-time; observasi berasal dari cache NASA FIRMS yang diperbarui saat sinkronisasi/deploy.
+- Titik berkumpul dan rencana bantuan masih simulasi, bukan lokasi atau rute evakuasi resmi.
+- Skor adalah heuristik prototype dan belum tervalidasi.
+- Pengembangan berikutnya memerlukan integrasi data resmi BPBD untuk titik evakuasi serta kanal notifikasi yang terverifikasi.
 
 Live demo: [https://siaga-api.my.id](https://siaga-api.my.id)
 

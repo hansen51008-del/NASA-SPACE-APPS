@@ -31,6 +31,7 @@ interface Props {
   records: Hotspot[];
   selected: string;
   onSelect: (name: string) => void;
+  onInspect: (record: Hotspot) => void;
   showMarkers: boolean;
   showBorders: boolean;
   density: boolean;
@@ -170,7 +171,11 @@ export default function TerrainMap(props: Props) {
           type: "Point" as const,
           coordinates: [r.longitude, r.latitude],
         },
-        properties: { high: r.confidence === "high", province: r.province },
+        properties: {
+          id: r.id,
+          high: r.confidence === "high",
+          province: r.province,
+        },
       })),
     }),
     [props.records],
@@ -594,8 +599,30 @@ export default function TerrainMap(props: Props) {
           "circle-pitch-alignment": "map",
         },
       });
-      map.on("click", "province-tint", (e) => {
-        const name = e.features?.[0]?.properties?.PROVINSI;
+      map.on("click", (e) => {
+        if (current.current.showMarkers) {
+          const hit = map.queryRenderedFeatures(
+            [
+              [e.point.x - 8, e.point.y - 8],
+              [e.point.x + 8, e.point.y + 8],
+            ],
+            { layers: ["hotspot-core", "hotspot-glow"] },
+          )[0];
+          const record = current.current.records.find(
+            (r) => r.id === hit?.properties?.id,
+          );
+          if (
+            record &&
+            (current.current.selected === "Indonesia" ||
+              current.current.selected === record.province)
+          ) {
+            current.current.onInspect(record);
+            return;
+          }
+        }
+        const name = map.queryRenderedFeatures(e.point, {
+          layers: ["province-tint"],
+        })[0]?.properties?.PROVINSI;
         if (name) current.current.onSelect(name);
       });
       map.on("mousemove", "province-tint", (e) => {

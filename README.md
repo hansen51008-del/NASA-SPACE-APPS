@@ -22,7 +22,7 @@ Cache `public/data/firms-cache.json` sengaja disertakan dalam commit agar deploy
 
 Skrip mengambil MODIS_NRT dan VIIRS_SNPP_NRT dari API resmi untuk tiga hari UTC yang telah selesai. Label FIRMS menampilkan asal data, waktu sinkronisasi, dan cakupan; tidak ada klaim pemantauan langsung. Tanpa cache yang valid, aplikasi memakai data sintetis berlabel jelas. Parser CSV tersedia, tetapi belum ada tombol unggah di UI.
 
-Skor merupakan heuristik prototype yang belum divalidasi sebagai penilaian keselamatan. Cuaca belum tersedia dan tidak dihitung. Periode tanpa cakupan atau cache lebih dari tujuh hari tidak diberi label Aman. Baseline historis, kalender, dan perbandingan tahunan nyata belum tersedia dari cache singkat; fitur tersebut tetap tersedia pada arsip demo.
+Skor merupakan heuristik prototype yang belum divalidasi sebagai penilaian keselamatan. Cuaca tersedia sebagai konteks terpisah di rincian hotspot dan tidak dihitung dalam skor. Periode tanpa cakupan atau cache lebih dari tujuh hari tidak diberi label Aman. Baseline historis, kalender, dan perbandingan tahunan nyata belum tersedia dari cache singkat; fitur tersebut tetap tersedia pada arsip demo.
 
 Deteksi satelit bukan konfirmasi kejadian kebakaran dan bukan pengukuran luas terbakar. Label Aman bukan jaminan keselamatan. Titik aman/rencana evakuasi serta tombol Lihat simulasi rencana bantuan hanya simulasi, bukan lokasi/rute resmi atau pengiriman bantuan. Ikuti arahan BPBD/pemerintah setempat dan jangan menunggu skor aplikasi dalam keadaan berbahaya.
 
@@ -41,6 +41,7 @@ Ditujukan terutama bagi warga di wilayah rawan; BPBD, lembaga lingkungan, NGO, p
 - SiagaApi bukan sistem peringatan dini real-time; observasi berasal dari cache NASA FIRMS yang diperbarui saat sinkronisasi/deploy.
 - Titik berkumpul dan rencana bantuan masih simulasi, bukan lokasi atau rute evakuasi resmi.
 - Skor adalah heuristik prototype dan belum tervalidasi.
+- Cuaca berupa data model Open-Meteo, bukan pengukuran stasiun, dan tidak masuk ke perhitungan skor. Cuaca saat ini tidak menggambarkan cuaca pada waktu observasi hotspot lama.
 - Pengembangan berikutnya memerlukan integrasi data resmi BPBD untuk titik evakuasi serta kanal notifikasi yang terverifikasi.
 
 Live demo: [https://siaga-api.my.id](https://siaga-api.my.id)
@@ -137,6 +138,14 @@ Jalankan `node tests/terrain-lighting-browser.mjs` untuk memeriksa kestabilan ke
 Gunakan sinkronisasi server-side dan penyedia cache yang sudah diimplementasikan, sesuai [panduan penyiapan](./docs/siagaapi-setup.md). `NASA_FIRMS_MAP_KEY` tetap berada di environment server; `npm run sync:firms` memvalidasi kedua produk sebelum memperbarui cache observasi publik yang sengaja disertakan dalam commit. UI menormalisasi baris CSV dengan `isDemo: false`, asal data, dan penetapan provinsi melalui point-in-polygon. Arsip historis dan metadata cakupan lengkap masih diperlukan sebelum perbandingan musiman data nyata diaktifkan. Jangan menggantikan cakupan setahun penuh dengan rentang NRT yang singkat.
 
 Referensi: [atribut MODIS NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/descriptions/FIRMS_MODIS_Firehotspots.html), [tutorial API NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html), [panduan keyakinan sensor NASA](https://forum.earthdata.nasa.gov/viewtopic.php?t=5182).
+
+## Konteks cuaca, privasi, dan atribusi
+
+Buka rincian hotspot melalui titik pada peta 2D/3D atau tombol **Rincian hotspot**. Cuaca baru diminta setelah rincian dibuka; memuat peta tidak mengambil cuaca. Panel menampilkan suhu model saat ini, maksimum/minimum hari ini, kelembapan, angin, hujan hari ini, serta hujan 14 hari yang sudah selesai. Nilai harian hari ini mencakup jam yang belum berlalu. Badge hari tanpa hujan menghitung hari berturut-turut dengan hujan <1 mm, mundur sampai kemarin, maksimal 14 hari tersedia. Riwayat ini merupakan keluaran model, bukan catatan stasiun. Mode Demo memakai cuaca model nyata untuk koordinat observasi sintetis; keduanya tetap terpisah.
+
+Koordinat hotspot publik dibulatkan ke **2 desimal** sebelum dikirim langsung dari browser ke Open-Meteo; penyedia juga menerima alamat IP koneksi. Service mendukung pembulatan **1 desimal** untuk lokasi pengguna, tetapi fitur Cek jarak/lokasi pengguna belum tersedia. Hasil disimpan di memori dan `sessionStorage` selama 30 menit per koordinat yang dibulatkan. Permintaan dibatalkan setelah 8 detik atau saat rincian ditutup. Gangguan cuaca tidak mengubah observasi hotspot maupun skor. Tidak diperlukan API key dan tidak ada key NASA FIRMS yang dikirim ke penyedia cuaca.
+
+[Weather data by Open-Meteo.com](https://open-meteo.com). Data berlisensi [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); [layanan API gratis untuk penggunaan non-komersial](https://open-meteo.com/en/terms). Pembulatan koordinat tidak menjadikan resolusi model setara dengan titik hotspot: **Cuaca model (bukan pengukuran stasiun), ± puluhan km**. Kondisi kering dan berangin umumnya meningkatkan kerentanan. Ini konteks, bukan prediksi.
 
 ## Atribusi geografi
 

@@ -1104,6 +1104,40 @@ export default function App() {
                 ? "Saat ini Mode Demo: observasi sintetis."
                 : "Saat ini menggunakan Cache NASA FIRMS."}
             </p>
+            <h3>Konteks cuaca & privasi</h3>
+            <p>
+              Cuaca model (bukan pengukuran stasiun), ± puluhan km. Cuaca saat
+              ini tersedia saat membuka rincian hotspot; bukan cuaca pada waktu
+              observasi lama dan tidak masuk ke perhitungan skor.
+            </p>
+            <p>
+              Koordinat hotspot dibulatkan ke 2 desimal sebelum dikirim ke
+              Open-Meteo. Penyedia menerima koordinat tersebut dan alamat IP
+              koneksi. Hasil disimpan di memori dan sesi browser selama 30
+              menit.
+            </p>
+            <p>
+              <a href="https://open-meteo.com" target="_blank" rel="noreferrer">
+                Weather data by Open-Meteo.com
+              </a>
+              . Data berlisensi{" "}
+              <a
+                href="https://creativecommons.org/licenses/by/4.0/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                CC BY 4.0
+              </a>
+              ;{" "}
+              <a
+                href="https://open-meteo.com/en/terms"
+                target="_blank"
+                rel="noreferrer"
+              >
+                API gratis untuk penggunaan non-komersial
+              </a>
+              .
+            </p>
           </>
         ) : modal === "method" ? (
           <>

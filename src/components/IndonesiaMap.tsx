@@ -18,6 +18,7 @@ import type { Hotspot, Provinces } from "../types";
 import { number } from "../types";
 import { provinceColour } from "./mapAppearance";
 import HotspotSymbols from "./HotspotSymbols";
+import HotspotDetails from "./HotspotDetails";
 const TerrainMap = lazy(() => import("./TerrainMap"));
 interface Props {
   boundaries: Provinces;
@@ -52,6 +53,29 @@ export default function IndonesiaMap({
     [pan, setPan] = useState({ x: 0, y: 0 });
   const [hover, setHover] = useState<string | null>(null);
   const [dimensional, setDimensional] = useState(true);
+  const [inspectedId, setInspectedId] = useState<string | null>(null);
+  const detailOpener = useRef<Element | null>(null);
+  const inspect = (record: Hotspot) => {
+    detailOpener.current = document.activeElement;
+    setInspectedId(record.id);
+  };
+  const closeDetail = () => {
+    setInspectedId(null);
+    if (
+      detailOpener.current instanceof HTMLElement ||
+      detailOpener.current instanceof SVGElement
+    )
+      detailOpener.current.focus();
+  };
+  const inspected = showMarkers
+    ? records.find((r) => r.id === inspectedId)
+    : undefined;
+  const firstObservation = records.find(
+    (r) => selected === "Indonesia" || r.province === selected,
+  );
+  useEffect(() => {
+    setInspectedId(null);
+  }, [records, selected, showMarkers]);
   const mapPanel = useRef<HTMLDivElement>(null);
   const fallbackFullscreen = useRef(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -253,6 +277,7 @@ export default function IndonesiaMap({
           fallback={<div className="terrain-loading">Memuat peta relief…</div>}
         >
           <TerrainMap
+            onInspect={inspect}
             boundaries={boundaries}
             records={records}
             selected={selected}
@@ -472,6 +497,7 @@ export default function IndonesiaMap({
                 })}
                 {showMarkers && (
                   <HotspotSymbols
+                    onInspect={inspect}
                     symbols={symbols}
                     projection={projection}
                     selected={selected}
@@ -555,6 +581,14 @@ export default function IndonesiaMap({
         </div>
       )}
       <div className="map-selection">
+        {showMarkers && firstObservation && (
+          <button
+            className="open-observation"
+            onClick={() => inspect(firstObservation)}
+          >
+            Rincian hotspot
+          </button>
+        )}
         <MapPin size={13} />
         <span>{selected === "Indonesia" ? "Lihat 38 provinsi" : selected}</span>
         {selected !== "Indonesia" && (
@@ -602,6 +636,7 @@ export default function IndonesiaMap({
       {!records.length && (
         <div className="map-empty">Tidak ada observasi untuk filter ini.</div>
       )}
+      {inspected && <HotspotDetails record={inspected} onClose={closeDetail} />}
     </div>
   );
 }

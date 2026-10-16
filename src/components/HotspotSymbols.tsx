@@ -15,10 +15,12 @@ export default function HotspotSymbols({
   symbols,
   projection,
   selected,
+  onInspect,
 }: {
   symbols: MapSymbol[];
   projection: GeoProjection;
   selected: string;
+  onInspect: (record: Hotspot) => void;
 }) {
   const flameIds = useMemo(() => {
     const occupied = new Set<string>();
@@ -43,7 +45,7 @@ export default function HotspotSymbols({
   }, [symbols, selected]);
 
   return (
-    <g className="hotspot-symbols" pointerEvents="none" aria-hidden="true">
+    <g className="hotspot-symbols" pointerEvents="none">
       <defs>
         <radialGradient id="ember-halo">
           <stop stopColor="#ffd67e" stopOpacity=".6" />
@@ -79,9 +81,26 @@ export default function HotspotSymbols({
           <g
             key={record.id}
             className="ember-point"
+            role="button"
+            tabIndex={-1}
+            aria-label={`Rincian hotspot ${record.province}, ${record.latitude.toFixed(2)}, ${record.longitude.toFixed(2)}`}
+            pointerEvents={focus ? "all" : "none"}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInspect(record);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                event.stopPropagation();
+                onInspect(record);
+              }
+            }}
             transform={`translate(${p[0]} ${p[1]})`}
             opacity={focus ? 1 : 0.12}
           >
+            <circle r={5} fill="transparent" />
             <circle
               r={radius + 3.1}
               fill="url(#ember-halo)"

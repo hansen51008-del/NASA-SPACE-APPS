@@ -67,7 +67,7 @@ skor = round(aktivitas + confidence + kenaikan)
 Aman: 0–29 | Waspada: 30–59 | Siaga: 60–100
 ```
 
-Baseline memerlukan sedikitnya tiga tahun sebelumnya untuk periode yang sama. Dataset demo memiliki cakupan sintetis lengkap; cache FIRMS tiga hari tidak memiliki baseline historis, sehingga komponen kenaikan tidak tersedia dan kontribusinya nol. Cuaca belum diintegrasikan dan tidak dihitung. Tidak ada data hujan/angin buatan.
+Baseline memerlukan sedikitnya tiga tahun sebelumnya untuk periode yang sama. Dataset demo memiliki cakupan sintetis lengkap; cache FIRMS tiga hari tidak memiliki baseline historis, sehingga komponen kenaikan tidak tersedia dan kontribusinya nol. Cuaca Open-Meteo tersedia sebagai konteks terpisah di rincian hotspot dan tidak dihitung dalam skor. Tidak ada data hujan/angin buatan.
 
 Skor memakai hari yang tersedia dalam pilihan periode, bukan membagi cache tiga hari seolah-olah sebulan penuh. Periode di luar cakupan atau cache yang disinkronkan lebih dari tujuh hari lalu menghasilkan **Belum dapat dinilai**, bukan Aman. Angka nol deteksi tidak menjamin tidak ada kebakaran. Skor nasional/provinsi dipengaruhi luas wilayah dan tidak cocok untuk perbandingan bahaya personal; ambangnya belum dikalibrasi atau divalidasi ilmiah.
 
@@ -80,6 +80,18 @@ Risk Brief berubah mengikuti wilayah, periode, dan skor. Checklist pencegahan/pe
 **Simulasi titik aman — perlu verifikasi dengan BPBD/pemerintah setempat.** Titik A/B dan langkah evakuasi adalah latihan perencanaan, tanpa lokasi, alamat, atau jalur darurat terverifikasi. Tombol **Lihat simulasi rencana bantuan** hanya menampilkan konfirmasi simulasi; tidak mengirim laporan atau memanggil petugas. Tidak ada notifikasi sungguhan, login, atau backend darurat.
 
 Deteksi satelit bukan kejadian kebakaran yang terkonfirmasi dan tidak mengukur luas terbakar. Label Aman bukan jaminan keselamatan. Pantau BPBD/pemerintah setempat, ikuti arahan resmi, dan jangan menunggu skor aplikasi ketika ada bahaya nyata. Data FIRMS dapat terlambat dan deteksi dipengaruhi tutupan awan serta sensor. SiagaApi bukan produk resmi NASA, BNPB, atau BPBD.
+
+## Konteks cuaca Open-Meteo
+
+`src/services/weatherService.ts` meminta endpoint publik `https://api.open-meteo.com/v1/forecast` tanpa API key, hanya saat rincian hotspot dibuka. Parameter: `current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m`, `daily=temperature_2m_max,temperature_2m_min,precipitation_sum`, `past_days=14`, `forecast_days=1`, `timezone=auto`. Satuan ditetapkan ke Celsius, km/jam, dan mm. Respons harus berisi angka finite, 15 tanggal berurutan dengan panjang array konsisten; kegagalan menampilkan status cuaca tidak tersedia tanpa mengubah data hotspot.
+
+Koordinat hotspot dibulatkan ke 2 desimal sebelum request; pilihan lokasi pengguna pada service memakai 1 desimal (fitur Cek jarak belum tersedia). Open-Meteo menerima koordinat yang dibulatkan dan alamat IP koneksi. Cache cuaca terpisah dari cache FIRMS: memori + `sessionStorage` selama 30 menit, dengan kunci koordinat yang dibulatkan. Timeout 8 detik memakai AbortController; menutup rincian membatalkan request. Tidak ada perubahan provider, cache, sinkronisasi, atau rumus risiko NASA FIRMS.
+
+Grafik menampilkan 14 hari yang sudah selesai, sedangkan angka hari ini mencakup satu hari penuh termasuk jam yang belum berlalu. Badge kering memakai hujan <1 mm dari hari terakhir yang selesai, maksimal 14 hari tersedia. Cuaca berasal dari model, bukan pengukuran stasiun; konteks saat ini tidak menggambarkan cuaca pada tanggal hotspot lama dan tidak masuk ke skor. Pada Mode Demo, lokasi hotspot sintetis tetap dilabeli demo, sementara cuaca berasal dari model Open-Meteo.
+
+[Weather data by Open-Meteo.com](https://open-meteo.com). Data berlisensi [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); [API gratis dibatasi untuk penggunaan non-komersial](https://open-meteo.com/en/terms). Resolusi model tidak setara titik hotspot: Cuaca model (bukan pengukuran stasiun), ± puluhan km.
+
+Unit test cuaca menggunakan fixture lokal tanpa jaringan. Dengan preview berjalan, jalankan `node tests/weather-browser.mjs` untuk interaksi desktop/mobile dan `node tests/weather-browser.mjs --live` untuk memeriksa request Open-Meteo nyata dari browser (memerlukan jaringan).
 
 ## Verifikasi
 

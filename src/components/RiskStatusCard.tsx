@@ -81,7 +81,7 @@ export default function RiskStatusCard({
           </div>
           <div>
             <dt>Cuaca</dt>
-            <dd>Belum tersedia · tidak dihitung</dd>
+            <dd>Tidak digunakan dalam skor</dd>
           </div>
         </dl>
 

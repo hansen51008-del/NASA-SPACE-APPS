@@ -1,0 +1,218 @@
+.observation-details {
+  position: absolute;
+  z-index: 12;
+  right: 16px;
+  top: 12px;
+  width: min(390px, calc(100% - 32px));
+  max-height: calc(100% - 60px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  color: #e7e9eb;
+  box-shadow: 0 12px 32px #0005;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.observation-details > header {
+  position: sticky;
+  top: -18px;
+  padding-block: 8px;
+  z-index: 1;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.observation-details h3 {
+  font-size: 18px;
+}
+.observation-details > header button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  background: var(--control);
+}
+.observation-details > p {
+  margin: 8px 0;
+}
+.observation-source > dl {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 6px 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+.observation-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.weather-context {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.weather-context h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+}
+.weather-context p {
+  margin: 8px 0;
+  color: #bbc5cf;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.weather-context .weather-model {
+  color: #d9c4a6;
+}
+.weather-temperature {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.weather-temperature strong {
+  font-size: 28px;
+  font-weight: 600;
+}
+.weather-temperature span {
+  font-size: 11px;
+  color: #bbc5cf;
+}
+.weather-values {
+  margin: 14px 0;
+}
+.weather-values > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 7px 0;
+}
+.weather-values dd {
+  text-align: right;
+}
+.weather-rain {
+  margin: 18px 0 12px;
+}
+.weather-rain svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+}
+.weather-rain rect {
+  fill: #93b4d0;
+}
+.weather-rain text {
+  fill: #bbc5cf;
+  font-size: 9px;
+}
+.weather-dry {
+  display: inline-block;
+  border: 1px solid #a8805055;
+  color: #e7c598;
+  background: #a8805012;
+  border-radius: 5px;
+  padding: 4px 8px;
+}
+.weather-privacy summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+}
+.observation-source summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+}
+.weather-credit {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--info);
+  text-decoration: underline;
+}
+.weather-error small {
+  display: block;
+}
+.weather-error button {
+  min-height: 44px;
+  margin-top: 8px;
+  background: var(--control);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 14px;
+}
+.weather-loading {
+  padding: 16px 0;
+  color: #bbc5cf;
+}
+.weather-skeleton {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.weather-skeleton i {
+  display: block;
+  height: 16px;
+  background: var(--control);
+  border-radius: 4px;
+  animation: weather-pulse 1.2s ease-in-out infinite alternate;
+}
+.weather-skeleton i:last-child {
+  height: 66px;
+}
+@keyframes weather-pulse {
+  to {
+    opacity: 0.4;
+  }
+}
+.map-selection .open-observation {
+  min-height: 44px;
+  padding: 8px;
+  background: var(--control);
+  color: #dde5ee;
+  border-radius: 5px;
+  font-size: 11px;
+}
+.hotspot-symbols .ember-point[role="button"] {
+  cursor: pointer;
+}
+.hotspot-symbols .ember-point:focus-visible {
+  outline: 2px solid #fff;
+}
+@media (max-width: 760px) {
+  .map-layout
+    .atlas-map:not(.is-dimensional)
+    .map-selection:has(.open-observation) {
+    top: 64px;
+    bottom: auto;
+    left: 10px;
+    right: auto;
+    transform: none;
+    max-width: calc(100% - 64px);
+  }
+  .observation-details {
+    top: auto;
+    bottom: 72px;
+    right: 8px;
+    width: calc(100% - 16px);
+    max-height: calc(100% - 84px);
+  }
+  .map-selection:has(.open-observation) {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weather-skeleton i {
+    animation: none;
+  }
+}

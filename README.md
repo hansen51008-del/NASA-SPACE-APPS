@@ -75,6 +75,8 @@ Buka alamat **Network** yang dicetak Vite, menggunakan alamat IPv4 Wi-Fi dan por
 
 ## Kemampuan yang tersedia
 
+- Tab **Berita** menampilkan judul dan ringkasan pendek dari feed penerbit, dengan tautan ke sumber asal. Filter jenis dan provinsi memisahkan berita dari pembaruan observasi otomatis.
+
 - Batas wilayah terpublikasi untuk 38 provinsi, dapat dipilih dengan klik maupun keyboard; pergeseran, pembesaran, pengaturan ulang, sorotan provinsi terpilih, penanda hotspot, dan pewarnaan aktivitas provinsi.
 - Enam tahun demo deterministik (2020–2025), pilihan Januari–Desember, pemutaran bulanan dengan putar/jeda, pengaturan kecepatan, dan pengaturan ulang ke seluruh tahun.
 - Lapisan observasi MODIS, VIIRS, dan gabungan; pengaturan keyakinan sensor dan tampilan.
@@ -138,6 +140,18 @@ Jalankan `node tests/terrain-lighting-browser.mjs` untuk memeriksa kestabilan ke
 Gunakan sinkronisasi server-side dan penyedia cache yang sudah diimplementasikan, sesuai [panduan penyiapan](./docs/siagaapi-setup.md). `NASA_FIRMS_MAP_KEY` tetap berada di environment server; `npm run sync:firms` memvalidasi kedua produk sebelum memperbarui cache observasi publik yang sengaja disertakan dalam commit. UI menormalisasi baris CSV dengan `isDemo: false`, asal data, dan penetapan provinsi melalui point-in-polygon. Arsip historis dan metadata cakupan lengkap masih diperlukan sebelum perbandingan musiman data nyata diaktifkan. Jangan menggantikan cakupan setahun penuh dengan rentang NRT yang singkat.
 
 Referensi: [atribut MODIS NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/descriptions/FIRMS_MODIS_Firehotspots.html), [tutorial API NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html), [panduan keyakinan sensor NASA](https://forum.earthdata.nasa.gov/viewtopic.php?t=5182).
+
+## Berita dan pembaruan observasi
+
+Tab **Berita** memuat dua jenis informasi yang dibedakan dengan jelas. **Berita** berasal dari RSS/Atom penerbit: hanya judul, nama sumber, tautan, tanggal publikasi, ringkasan teks maksimal 200 karakter, serta tag provinsi. Artikel penuh dan gambar tidak disalin. Hak konten tetap pada penerbit; gunakan tautan **Baca di sumber asal**. **Pembaruan observasi** dihitung dari dataset aplikasi menggunakan `riskService` dan harmonisasi yang sudah ada, mengikuti wilayah dan periode pilihan. Ringkasan ini bukan berita dan bukan konfirmasi kebakaran. Mode Demo tetap berlabel; cache observasi lebih dari 7 hari atau periode tanpa cakupan menghasilkan **Belum dapat dinilai**, bukan Aman.
+
+Jalankan `npm run sync:news` lalu `npm run build` untuk memperbarui berita pada build statis. Skrip membaca `scripts/news-sources.json` dan mengganti `public/data/news-cache.json` secara atomik setelah validasi. Cache publik ini disertakan dalam repositori sebagai cadangan statis. Konfigurasi Vercel yang ada **tidak diubah**: sinkronisasi berita harus dijalankan secara terpisah sebelum memperbarui build/salinan cache. Membuka tab atau menekan Coba lagi hanya membaca cache lokal, bukan mengambil RSS dari browser. Tidak diperlukan API key.
+
+Sumber aktif: feed Warta Bumi, Humaniora, dan Terkini yang tercantum di [direktori RSS resmi ANTARA](https://www.antaranews.com/rss), diverifikasi merespons HTTP 200/XML pada 16 Oktober 2026. BNPB/BMKG tercatat **belum terverifikasi dan nonaktif**, dengan URL feed kosong agar tidak mengarang endpoint. Sumber baru harus diverifikasi sebelum mengaktifkan `verified` dan `enabled`. Kata kunci seperti karhutla, kebakaran hutan/lahan, titik panas, kabut asap, gambut, dan BPBD menyaring feed; tag provinsi memakai penyebutan nama/alias, bukan verifikasi lokasi kejadian.
+
+Cache menyimpan paling banyak 50 item, dideduplikasi berdasarkan URL dan judul, urut terbaru. Metadata mencatat waktu sinkronisasi dan status masing-masing sumber. Jika sebagian sumber gagal, hasil sumber yang berhasil tetap ditampilkan dengan keterangan keterbatasan. Jika semua sumber gagal atau validasi akhir gagal, cache lama tidak diganti. Daftar kosong tidak berarti tidak ada kejadian. Feed hanya menyediakan jendela berita terbaru dari penerbit, bukan arsip lengkap; tanggal publikasi dan waktu sinkronisasi ditampilkan terpisah.
+
+Parser XML `saxes` adalah dependency pengembangan untuk skrip sinkronisasi, bukan bagian bundle browser. Jalankan `npm test` untuk fixture RSS/Atom, validasi, cache cadangan, dan ringkasan observasi. Dengan preview di port 4173, jalankan `node tests/news-browser.mjs` untuk verifikasi 360 px/desktop, filter, akses keyboard, serta cache kosong/rusak/tidak tersedia.
 
 ## Konteks cuaca, privasi, dan atribusi
 

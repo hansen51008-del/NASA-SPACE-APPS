@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity as ActivityIcon,
   ArrowDownToLine,
@@ -14,6 +14,7 @@ import {
   Grid2X2,
   Map,
   MapPin,
+  Newspaper,
   Radio,
   Satellite,
   ShieldCheck,
@@ -50,11 +51,13 @@ import { coveredMonth, inPeriod } from "./services/coveragePeriod";
 import ProvinceSearch from "./components/ProvinceSearch";
 import RegionLeaders from "./components/RegionLeaders";
 type View = "history" | "compare";
-type Tab = "home" | "map" | "data";
+const NewsFeed = lazy(() => import("./components/NewsFeed"));
+type Tab = "home" | "map" | "data" | "news";
 const tabs = [
   { id: "home", label: "Beranda", icon: Home },
   { id: "map", label: "Peta aktivitas", icon: Map },
   { id: "data", label: "Data & analitik", icon: ActivityIcon },
+  { id: "news", label: "Berita", icon: Newspaper },
 ] as const;
 export default function App() {
   const [data, setData] = useState<
@@ -163,6 +166,13 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [exported]);
   const years = data?.years ?? YEARS;
+  const newsProvinces = useMemo(
+    () =>
+      data?.boundaries.features
+        .map((f) => f.properties.PROVINSI)
+        .sort((a, b) => a.localeCompare(b, "id")) ?? [],
+    [data],
+  );
   const isDemo = data?.mode !== "firms";
   const layerLabel = layer === "Harmonized" ? "Gabungan" : layer;
   const coverage = !isDemo ? data?.coverage : undefined;
@@ -525,20 +535,26 @@ export default function App() {
                 ? "Kenali risiko. Siapkan langkah."
                 : tab === "map"
                   ? "Jelajahi aktivitas satelit"
-                  : "Data & analitik"}
+                  : tab === "news"
+                    ? "Berita & pembaruan"
+                    : "Data & analitik"}
             </h1>
             <p>
               {tab === "home"
                 ? "Pahami indikator risiko dan siapkan keluarga."
                 : tab === "map"
                   ? "Pilih wilayah, periode, dan lapisan observasi satelit."
-                  : "Baca pola observasi sesuai wilayah dan periode pilihan."}
+                  : tab === "news"
+                    ? "Kabar dari sumber asal, dengan konteks observasi satelit."
+                    : "Baca pola observasi sesuai wilayah dan periode pilihan."}
             </p>
           </div>
           <div className="page-actions">
-            <span className="demo-badge">
-              <span /> {isDemo ? "Mode Demo" : "Cache NASA FIRMS"}
-            </span>
+            {tab !== "news" && (
+              <span className="demo-badge">
+                <span /> {isDemo ? "Mode Demo" : "Cache NASA FIRMS"}
+              </span>
+            )}
             {tab === "data" && (
               <button
                 className="outline-button"
@@ -1016,7 +1032,25 @@ export default function App() {
                 Sensor, metode & batas data <CircleHelp size={16} />
               </button>
             </section>
-            {tab !== "map" && sourceDetails}
+            {tab === "news" && (
+              <section
+                id="panel-news"
+                role="tabpanel"
+                aria-labelledby="tab-news"
+                tabIndex={0}
+              >
+                <Suspense fallback={<p role="status">Memuat berita…</p>}>
+                  <NewsFeed
+                    dataset={data}
+                    provinces={newsProvinces}
+                    year={year}
+                    month={month}
+                    initialRegion={region}
+                  />
+                </Suspense>
+              </section>
+            )}
+            {tab !== "map" && tab !== "news" && sourceDetails}
             <div className="data-notice">
               <InfoMark />
               <p>

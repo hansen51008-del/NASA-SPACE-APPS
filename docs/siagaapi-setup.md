@@ -93,7 +93,26 @@ Grafik menampilkan 14 hari yang sudah selesai, sedangkan angka hari ini mencakup
 
 Unit test cuaca menggunakan fixture lokal tanpa jaringan. Dengan preview berjalan, jalankan `node tests/weather-browser.mjs` untuk interaksi desktop/mobile dan `node tests/weather-browser.mjs --live` untuk memeriksa request Open-Meteo nyata dari browser (memerlukan jaringan).
 
+## Sinkronisasi berita
+
+```sh
+npm run sync:news
+npm run build
+```
+
+`scripts/run-sync-news.mjs` mengikuti pola bundling esbuild ke direktori sementara dari sinkronisasi FIRMS, tanpa mengubah skrip FIRMS. `scripts/sync-news.ts` membaca konfigurasi `scripts/news-sources.json`; hanya sumber dengan `verified: true` dan `enabled: true` yang diambil. Feed Warta Bumi, Humaniora, dan Terkini ditemukan di [halaman RSS resmi ANTARA](https://www.antaranews.com/rss) dan diverifikasi HTTP 200/XML pada 16 Oktober 2026. BNPB/BMKG belum memiliki endpoint berita yang terverifikasi dalam konfigurasi, sehingga `url: null`, `verified: false`, dan `enabled: false`. Jangan mengisi URL berdasarkan tebakan. Periksa respons RSS/Atom nyata dan catat `discoveryUrl`, `checkedAt`, serta hasil pemeriksaan sebelum mengaktifkan sumber baru.
+
+Parser XML `saxes` hanya dipakai di skrip server; tidak masuk bundle frontend. Setiap sumber dibatasi 15 detik dan 2 MB, tanpa mengikuti redirect; DTD/entity ditolak. Artikel disaring dengan kata kunci, dibersihkan menjadi teks, diberi tag provinsi dari 38 nama wilayah dan alias, lalu dideduplikasi berdasarkan URL normal dan judul. Item tanpa tanggal/tautan valid, tanggal masa depan, atau URL berkredensial dibuang. Ringkasan maksimal 200 karakter berasal dari description/summary feed; content artikel dan gambar tidak diambil. Tautan dan atribusi penerbit tetap tampil.
+
+Cache `public/data/news-cache.json` memuat `schemaVersion`, `fetchedAt`, daftar `sources` dengan status `success`/`failed`/`unverified`/`disabled`, dan maksimal 50 `items` berurutan terbaru. Penulisan memakai file sementara `*.tmp` dan rename setelah validasi. Jika sebagian sumber gagal, cache baru memuat hasil sumber yang berhasil beserta status kegagalan. Jika seluruh sumber gagal atau validasi akhir gagal, cache sebelumnya beserta metadatanya tetap utuh; proses keluar dengan kegagalan generik tanpa mencetak URL ber-key, error upstream, atau respons mentah.
+
+Cache berita publik sengaja disertakan di Git untuk distribusi statis, tanpa kredensial. Setelah sync, periksa hasil lalu perbarui salinan cache pada alur publikasi biasa. Konfigurasi `vercel.json` tetap menjalankan sinkronisasi FIRMS dan build seperti sebelumnya; **sync berita tidak otomatis berjalan pada deploy**. Tidak ada perubahan jadwal deploy atau key FIRMS. Browser hanya meminta cache lokal saat tab Berita dibuka dan melakukan revalidasi HTTP; Coba lagi tidak menyinkronkan feed penerbit.
+
+Pembaruan observasi pada tab Berita memakai dataset yang sudah dimuat dan `calculateRisk`, sehingga pencocokan lintas provinsi, cakupan, skor, dan batas umur tujuh hari tetap sama. Filter wilayah informasi tidak mengubah filter peta atau skor Beranda. Periode mengikuti pilihan aplikasi; label Mode Demo hanya melekat pada observasi sintetis, bukan pada berita penerbit. Tidak ada berita fiktif sebagai pengganti cache yang hilang. Ringkasan otomatis selalu ditandai bukan berita dan bukan konfirmasi kebakaran.
+
 ## Verifikasi
+
+`tests/news.test.ts` memakai fixture lokal RSS/Atom dan menguji sanitasi, 38 provinsi, validasi, deduplikasi, batas item, penyimpanan atomik, kegagalan sumber, dan batas risiko. Dengan `npm run preview -- --port 4173`, jalankan `node tests/news-browser.mjs` untuk desktop/mobile; `APP_URL` dapat menunjuk server lokal lain.
 
 `npm test` menguji Aman/Waspada/Siaga, perubahan wilayah/periode, baseline, cache lama, penolakan baris rusak, provenance, fallback tanpa cache, dan kontrak request server melalui fixture.
 

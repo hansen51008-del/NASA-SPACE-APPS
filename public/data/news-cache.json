@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-10-16T13:44:20.347Z",
+  "sources": [
+    {
+      "id": "antara-warta-bumi",
+      "name": "ANTARA · Warta Bumi",
+      "url": "https://www.antaranews.com/rss/warta-bumi.xml",
+      "status": "success",
+      "matched": 0
+    },
+    {
+      "id": "antara-humaniora",
+      "name": "ANTARA · Humaniora",
+      "url": "https://www.antaranews.com/rss/humaniora.xml",
+      "status": "success",
+      "matched": 0
+    },
+    {
+      "id": "antara-terkini",
+      "name": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/rss/terkini.xml",
+      "status": "success",
+      "matched": 6
+    },
+    {
+      "id": "bnpb",
+      "name": "BNPB",
+      "url": null,
+      "status": "unverified",
+      "matched": 0
+    },
+    {
+      "id": "bmkg",
+      "name": "BMKG",
+      "url": null,
+      "status": "unverified",
+      "matched": 0
+    }
+  ],
+  "items": [
+    {
+      "title": "BPBD: Gempa Bogor rusak 17 rumah, 51 warga mengungsi",
+      "source": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/berita/5792041/bpbd-gempa-bogor-rusak-17-rumah-51-warga-mengungsi",
+      "publishedAt": "2026-10-16T13:09:27.000Z",
+      "summary": "Badan Penanggulangan Bencana Daerah (BPBD) Kabupaten Bogor, Jawa Barat, mencatat sebanyak 17 rumah mengalami kerusakan ...",
+      "provinces": [
+        "Jawa Barat"
+      ]
+    },
+    {
+      "title": "IDAI minta pemerintah prioritaskan kesehatan anak saat karhutla",
+      "source": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/berita/5792021/idai-minta-pemerintah-prioritaskan-kesehatan-anak-saat-karhutla",
+      "publishedAt": "2026-10-16T13:07:32.000Z",
+      "summary": "Ikatan Dokter Anak Indonesia (IDAI) mengatakan, pihaknya meminta agar pemerintah melakukan upaya yang lebih intens guna ...",
+      "provinces": []
+    },
+    {
+      "title": "The Changcuters ajak penonton doakan warga terdampak karhutla",
+      "source": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/berita/5792009/the-changcuters-ajak-penonton-doakan-warga-terdampak-karhutla",
+      "publishedAt": "2026-10-16T13:04:57.000Z",
+      "summary": "Grup The Changcuters mengajak para penonton pertunjukan mereka dalam festival musik Synchronize Fest 2026 di ...",
+      "provinces": []
+    },
+    {
+      "title": "UI-IDAI tingkatkan kesiagaan nakes-fasilitas tangani dampak karhutla",
+      "source": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/berita/5791933/ui-idai-tingkatkan-kesiagaan-nakes-fasilitas-tangani-dampak-karhutla",
+      "publishedAt": "2026-10-16T12:41:31.000Z",
+      "summary": "Universitas Indonesia dan Ikatan Dokter Anak Indonesia (IDAI) menjalankan sejumlah upaya untuk menangani dampak ...",
+      "provinces": []
+    },
+    {
+      "title": "Asap karhutla mengandung partikel penyebab iritasi saluran pernapasan",
+      "source": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/berita/5791921/asap-karhutla-mengandung-partikel-penyebab-iritasi-saluran-pernapasan",
+      "publishedAt": "2026-10-16T12:39:39.000Z",
+      "summary": "Anggota Unit Kerja Koordinasi Respirologi Ikatan Dokter Anak Indonesia (IDAI) Fifi Sofiah menyampaikan ...",
+      "provinces": []
+    },
+    {
+      "title": "Empat orang meninggal dunia saat padamkan karhutla di Bromo",
+      "source": "ANTARA · Terkini",
+      "url": "https://www.antaranews.com/video/5791737/empat-orang-meninggal-dunia-saat-padamkan-karhutla-di-bromo",
+      "publishedAt": "2026-10-16T12:35:24.000Z",
+      "summary": "ANTARA - &lrm;Empat orang meninggal dunia saat berupaya memadamkan kebakaran hutan dan lahan di kawasan Taman Nasional ...",
+      "provinces": []
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "antara-warta-bumi",
+    "name": "ANTARA · Warta Bumi",
+    "url": "https://www.antaranews.com/rss/warta-bumi.xml",
+    "discoveryUrl": "https://www.antaranews.com/rss",
+    "verified": true,
+    "enabled": true,
+    "checkedAt": "2026-10-16T13:33:30.932Z",
+    "note": "HTTP 200, text/xml; 20 item RSS saat verifikasi."
+  },
+  {
+    "id": "antara-humaniora",
+    "name": "ANTARA · Humaniora",
+    "url": "https://www.antaranews.com/rss/humaniora.xml",
+    "discoveryUrl": "https://www.antaranews.com/rss",
+    "verified": true,
+    "enabled": true,
+    "checkedAt": "2026-10-16T13:33:30.864Z",
+    "note": "HTTP 200, text/xml; 20 item RSS saat verifikasi."
+  },
+  {
+    "id": "antara-terkini",
+    "name": "ANTARA · Terkini",
+    "url": "https://www.antaranews.com/rss/terkini.xml",
+    "discoveryUrl": "https://www.antaranews.com/rss",
+    "verified": true,
+    "enabled": true,
+    "checkedAt": "2026-10-16T13:33:31.057Z",
+    "note": "HTTP 200, text/xml; 50 item RSS saat verifikasi."
+  },
+  {
+    "id": "bnpb",
+    "name": "BNPB",
+    "url": null,
+    "discoveryUrl": "https://bnpb.go.id/berita",
+    "verified": false,
+    "enabled": false,
+    "checkedAt": null,
+    "note": "Endpoint RSS/Atom resmi belum terverifikasi; halaman berita bukan feed."
+  },
+  {
+    "id": "bmkg",
+    "name": "BMKG",
+    "url": null,
+    "discoveryUrl": "https://www.bmkg.go.id/",
+    "verified": false,
+    "enabled": false,
+    "checkedAt": null,
+    "note": "Feed berita RSS/Atom belum terverifikasi; feed peringatan cuaca bukan berita karhutla."
+  }
+]

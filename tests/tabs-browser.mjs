@@ -73,7 +73,12 @@ try {
       path: `test-results/tabs-data-${width}.png`,
       fullPage: true,
     });
-    for (const name of ["Beranda", "Peta aktivitas", "Data & analitik"]) {
+    for (const name of [
+      "Beranda",
+      "Peta aktivitas",
+      "Data & analitik",
+      "Berita",
+    ]) {
       await tab(name).click();
       assert.equal(await page.getByRole("tabpanel").count(), 1);
       assert.equal(
@@ -117,16 +122,13 @@ try {
       "true",
     );
     await tab("Peta aktivitas").press("End");
-    assert.equal(
-      await tab("Data & analitik").getAttribute("aria-selected"),
-      "true",
-    );
-    await tab("Data & analitik").press("Home");
+    assert.equal(await tab("Berita").getAttribute("aria-selected"), "true");
+    await tab("Berita").press("Home");
     assert.equal(await tab("Beranda").getAttribute("aria-selected"), "true");
   }
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: three tabs, home-first, CTA, keyboard, shared filters, preserved checklist/map, no URL change, 360px/1440px layout and touch targets.",
+    "PASS: four tabs, home-first, CTA, keyboard, shared filters, preserved checklist/map, no URL change, 360px/1440px layout and touch targets.",
   );
 } finally {
   await browser.close();

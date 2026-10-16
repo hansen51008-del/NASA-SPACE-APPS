@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Fixture Atom</title>
+  <entry><title>Hotspot di Papua Barat Daya</title><link rel="self" href="https://news.example.org/api/1"/><link rel="alternate" type="text/html" href="/papua"/><published>2026-10-16T05:00:00+07:00</published><updated>2026-10-16T09:00:00Z</updated><summary type="html">&lt;p&gt;Observasi titik panas Papua Barat Daya.&lt;/p&gt;</summary><content>Artikel lengkap tidak boleh disimpan.</content></entry>
+  <entry><title>BPBD Maluku Utara memeriksa gambut</title><link href="https://news.example.org/malut"/><updated>2026-10-14T03:00:00Z</updated><summary type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Fixture <b>Maluku Utara</b>.</p></div></summary></entry>
+</feed>

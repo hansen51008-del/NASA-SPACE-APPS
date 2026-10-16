@@ -35,5 +35,5 @@
     "vitest": "^4.1.11",
     "esbuild": "^0.25.12"
   },
-  "description": "Prototype kesiapsiagaan karhutla warga untuk JOINTS 2026"
+  "description": "Prototype kesiapsiagaan karhutla warga"
 }

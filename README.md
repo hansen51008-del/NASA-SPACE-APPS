@@ -1,6 +1,6 @@
 # SiagaApi
 
-Platform indikator risiko karhutla dan panduan kesiapsiagaan warga Indonesia, dibuat sebagai prototype JOINTS 2026. Kebakaran hutan dan lahan berdampak pada emisi karbon, keanekaragaman hayati, dan kesehatan masyarakat. SiagaApi membantu pengguna memilih wilayah dan periode, membaca observasi MODIS/VIIRS serta alasan indikator risiko, lalu menyiapkan tindakan keluarga.
+Platform indikator risiko karhutla dan panduan kesiapsiagaan warga Indonesia, dikembangkan sebagai prototype. Kebakaran hutan dan lahan berdampak pada emisi karbon, keanekaragaman hayati, dan kesehatan masyarakat. SiagaApi membantu pengguna memilih wilayah dan periode, membaca observasi MODIS/VIIRS serta alasan indikator risiko, lalu menyiapkan tindakan keluarga.
 
 **Alur utama:** pilih wilayah/periode → observasi hotspot → indikator Aman / Waspada / Siaga → alasan → daftar kesiapsiagaan.
 
@@ -33,7 +33,7 @@ Deteksi satelit bukan konfirmasi kejadian kebakaran dan bukan pengukuran luas te
 
 Ditujukan terutama bagi warga di wilayah rawan; BPBD, lembaga lingkungan, NGO, peneliti, dan jurnalis dapat mengeksplorasi observasi untuk tindak lanjut yang memerlukan verifikasi lapangan.
 
-Live demo: akan ditambahkan setelah deploy Vercel.
+Live demo: [https://siaga-api.my.id](https://siaga-api.my.id)
 
 ## Menjalankan secara lokal
 

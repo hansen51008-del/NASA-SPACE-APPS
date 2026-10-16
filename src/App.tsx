@@ -286,7 +286,7 @@ export default function App() {
             <Flame size={23} fill="currentColor" />
           </span>
           <span>
-            SiagaApi<span className="brand-period">.</span>
+            SiagaApi
           </span>
           <span className="brand-subtitle">
             KESIAPSIAGAAN
@@ -329,7 +329,7 @@ export default function App() {
             <span className="orbit-icon">
               <Satellite size={19} />
             </span>{" "}
-            JOINTS <b>2026</b>
+            PROTOTYPE
           </span>
           <button
             className="icon-button"
@@ -781,11 +781,11 @@ export default function App() {
         )}
         <footer>
           <span>
-            <span className="footer-brand">SiagaApi.</span> Kesiapsiagaan
+            <span className="footer-brand">SiagaApi</span> Kesiapsiagaan
             karhutla · {isDemo ? "Mode Demo" : "Cache FIRMS"}
           </span>
           <span>
-            PROTOTYPE JOINTS 2026 <i /> INDONESIA
+            PROTOTYPE <i /> INDONESIA
           </span>
         </footer>
       </main>
@@ -819,7 +819,7 @@ export default function App() {
           <>
             <h2>Tentang SiagaApi</h2>
             <p className="modal-intro">
-              Prototype JOINTS 2026 / kesiapsiagaan warga
+              Prototype kesiapsiagaan warga
             </p>
             <p>
               Kebakaran hutan dan lahan di Indonesia melepaskan emisi karbon.

@@ -81,6 +81,43 @@ export default function App() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [mapVisited, setMapVisited] = useState(false);
+  const [mapPanel, setMapPanel] = useState<"location" | "layers" | null>(null);
+  const [desktopPanels, setDesktopPanels] = useState({
+    location: true,
+    layers: true,
+  });
+  const [mobileMap, setMobileMap] = useState(
+    () => window.matchMedia("(max-width: 760px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 760px)");
+    const update = () => setMobileMap(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const panelOpen = (name: "location" | "layers") =>
+    mobileMap ? mapPanel === name : desktopPanels[name];
+  const toggleMapPanel = (name: "location" | "layers") => {
+    if (mobileMap) setMapPanel(mapPanel === name ? null : name);
+    else
+      setDesktopPanels((current) => ({ ...current, [name]: !current[name] }));
+  };
+  const closeMapPanel = (name: "location" | "layers") => {
+    if (mobileMap) setMapPanel(null);
+    else setDesktopPanels((current) => ({ ...current, [name]: false }));
+    document.getElementById(`toggle-map-${name}`)?.focus();
+  };
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(81);
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const observer = new ResizeObserver(() =>
+      setHeaderHeight(header.getBoundingClientRect().height),
+    );
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
@@ -275,9 +312,116 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setExported(true);
   }
+  const contextControls = (
+    <div className="context-bar">
+      <div className="context-title">
+        <span className="status-dot" />
+        <strong>Pantauan wilayah</strong>
+        <span className="vertical-divider" />
+        <span>{region}</span>
+        <ChevronRight size={12} />
+        <span>{periodLabel}</span>
+      </div>
+      <div className="context-controls">
+        {month !== null && (
+          <button
+            className="text-button"
+            onClick={() => {
+              setMonth(null);
+              setPlaying(false);
+            }}
+          >
+            {isDemo ? "Tampilkan seluruh tahun" : "Seluruh cakupan cache"}{" "}
+            <X size={12} />
+          </button>
+        )}
+        <YearSelector year={year} onChange={changeYear} years={years} />
+      </div>
+    </div>
+  );
+  const locationControls = data ? (
+    <>
+      <div className="citizen-filters">
+        <label>
+          Wilayah
+          <select
+            aria-label="Wilayah pemantauan"
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+          >
+            <option>Indonesia</option>
+            {data.boundaries.features
+              .map((f) => f.properties.PROVINSI)
+              .sort()
+              .map((name) => (
+                <option key={name}>{name}</option>
+              ))}
+          </select>
+        </label>
+        <label>
+          Periode
+          <select
+            aria-label="Bulan pemantauan"
+            value={month ?? "all"}
+            onChange={(e) => {
+              if (e.target.value === "all") {
+                setMonth(null);
+                setPlaying(false);
+              } else changeMonth(Number(e.target.value));
+            }}
+          >
+            <option value="all">
+              {isDemo ? "Seluruh tahun" : "Seluruh cakupan cache"}
+            </option>
+            {MONTHS.map((name, i) => (
+              <option
+                key={name}
+                value={i + 1}
+                disabled={!isDemo && !coveredMonth(coverage, year, i + 1)}
+              >
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {!isDemo && (
+        <p className="coverage-explanation">
+          Bulan tanpa data tidak dapat dipilih. Cakupan bukan satu bulan penuh.
+        </p>
+      )}
+    </>
+  ) : null;
+  const sourceDetails = data ? (
+    <div className="data-provenance" role="status">
+      <strong>{isDemo ? "Mode Demo" : "Cache NASA FIRMS"}</strong>
+      <p>
+        {isDemo
+          ? "Observasi sintetis, bukan kondisi saat ini."
+          : `Cakupan ${data.coverage?.start} sampai ${data.coverage?.end} (UTC), bukan pantauan langsung.`}
+      </p>
+      <details>
+        <summary>Sumber dan batas data</summary>
+        <p>{data.notice}</p>
+        {data.mode === "firms" ? (
+          <p>
+            Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT. Sinkronisasi:{" "}
+            {data.updatedAt} / cakupan {data.coverage?.start} sampai{" "}
+            {data.coverage?.end} (UTC). Cache tidak diperbarui otomatis; cakupan
+            satelit bukan jaminan semua kebakaran teramati.
+          </p>
+        ) : (
+          <p>
+            Observasi sintetis untuk demonstrasi. Tidak mencerminkan kondisi
+            kebakaran saat ini.
+          </p>
+        )}
+      </details>
+    </div>
+  ) : null;
   return (
     <>
-      <header className="topbar">
+      <header className="topbar" ref={headerRef}>
         <a
           href="#"
           className="brand"
@@ -358,7 +502,12 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main>
+      <main
+        className={tab === "map" ? "map-layout" : undefined}
+        style={
+          { "--app-header-height": `${headerHeight}px` } as React.CSSProperties
+        }
+      >
         <div className="page-heading">
           <div>
             <div className="breadcrumb">
@@ -396,31 +545,7 @@ export default function App() {
             )}
           </div>
         </div>
-        <div className="context-bar">
-          <div className="context-title">
-            <span className="status-dot" />
-            <strong>Pantauan wilayah</strong>
-            <span className="vertical-divider" />
-            <span>{region}</span>
-            <ChevronRight size={12} />
-            <span>{periodLabel}</span>
-          </div>
-          <div className="context-controls">
-            {month !== null && (
-              <button
-                className="text-button"
-                onClick={() => {
-                  setMonth(null);
-                  setPlaying(false);
-                }}
-              >
-                {isDemo ? "Tampilkan seluruh tahun" : "Seluruh cakupan cache"}{" "}
-                <X size={12} />
-              </button>
-            )}
-            <YearSelector year={year} onChange={changeYear} years={years} />
-          </div>
-        </div>
+        {tab !== "map" && contextControls}
         {error ? (
           <div className="load-state" role="alert">
             <h2>Data belum dapat dimuat</h2>
@@ -440,56 +565,7 @@ export default function App() {
           </div>
         ) : (
           <>
-            <div className="citizen-filters">
-              <label>
-                Wilayah
-                <select
-                  aria-label="Wilayah pemantauan"
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                >
-                  <option>Indonesia</option>
-                  {data.boundaries.features
-                    .map((f) => f.properties.PROVINSI)
-                    .sort()
-                    .map((name) => (
-                      <option key={name}>{name}</option>
-                    ))}
-                </select>
-              </label>
-              <label>
-                Periode
-                <select
-                  aria-label="Bulan pemantauan"
-                  value={month ?? "all"}
-                  onChange={(e) => {
-                    if (e.target.value === "all") {
-                      setMonth(null);
-                      setPlaying(false);
-                    } else changeMonth(Number(e.target.value));
-                  }}
-                >
-                  <option value="all">
-                    {isDemo ? "Seluruh tahun" : "Seluruh cakupan cache"}
-                  </option>
-                  {MONTHS.map((name, i) => (
-                    <option
-                      key={name}
-                      value={i + 1}
-                      disabled={!isDemo && !coveredMonth(coverage, year, i + 1)}
-                    >
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            {!isDemo && (
-              <p className="coverage-explanation">
-                Bulan tanpa data tidak dapat dipilih. Cakupan bukan satu bulan
-                penuh.
-              </p>
-            )}
+            {tab !== "map" && locationControls}
             <section
               id="panel-home"
               role="tabpanel"
@@ -536,10 +612,77 @@ export default function App() {
               tabIndex={0}
               hidden={tab !== "map"}
             >
-              <p className="coverage-explanation">
-                Observasi satelit bukan konfirmasi kejadian kebakaran. Filter
-                peta tidak mengubah indikator risiko.
-              </p>
+              {tab === "map" && (
+                <div
+                  className={`map-floating map-location ${panelOpen("location") ? "is-open" : ""}`}
+                  id="map-location-panel"
+                >
+                  <div className="floating-heading">
+                    <h2>Wilayah & periode</h2>
+                    <button
+                      className="map-panel-close"
+                      aria-label="Tutup panel wilayah"
+                      onClick={() => closeMapPanel("location")}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                  {contextControls}
+                  {locationControls}
+                  {data && (
+                    <>
+                      <ProvinceSearch
+                        regions={data.boundaries.features
+                          .map((feature) => feature.properties.PROVINSI)
+                          .sort()}
+                        ranking={ranking}
+                        onSelect={setRegion}
+                      />
+                      {isDemo && (
+                        <FireReplay
+                          month={month}
+                          setMonth={setMonth}
+                          playing={playing}
+                          setPlaying={setPlaying}
+                          counts={counts}
+                          speed={speed}
+                          setSpeed={setSpeed}
+                          year={year}
+                        />
+                      )}
+                    </>
+                  )}
+                  <p className="helper">
+                    Observasi satelit bukan konfirmasi kebakaran. Filter peta
+                    tidak mengubah indikator risiko.
+                  </p>
+                  {sourceDetails}
+                  <button
+                    className="text-button"
+                    onClick={() => setModal("method")}
+                  >
+                    Sumber, atribusi & metode
+                  </button>
+                </div>
+              )}
+              <div className="map-bottom-controls">
+                <button
+                  id="toggle-map-location"
+                  aria-expanded={panelOpen("location")}
+                  aria-controls="map-location-panel"
+                  onClick={() => toggleMapPanel("location")}
+                >
+                  Wilayah & periode
+                </button>
+                <button
+                  id="toggle-map-layers"
+                  aria-expanded={panelOpen("layers")}
+                  aria-controls="map-layer-panel"
+                  onClick={() => toggleMapPanel("layers")}
+                >
+                  Sensor & filter
+                </button>
+              </div>
               {mapVisited && (
                 <>
                   <div className="workspace">
@@ -548,13 +691,6 @@ export default function App() {
                         <h2>
                           <span className="live-square" /> Peta aktivitas
                         </h2>
-                        <ProvinceSearch
-                          regions={data.boundaries.features
-                            .map((feature) => feature.properties.PROVINSI)
-                            .sort()}
-                          ranking={ranking}
-                          onSelect={setRegion}
-                        />
                         <div>
                           <span className="subtle-tag">
                             {layerLabel.toUpperCase()}
@@ -575,45 +711,48 @@ export default function App() {
                         density={density}
                         onDensityChange={setDensity}
                       />
-                      {isDemo && (
-                        <FireReplay
-                          month={month}
-                          setMonth={setMonth}
-                          playing={playing}
-                          setPlaying={setPlaying}
-                          counts={counts}
-                          speed={speed}
-                          setSpeed={setSpeed}
-                          year={year}
-                        />
-                      )}
                     </section>
-                    <RegionPanel
-                      isDemo={isDemo}
-                      periodLabel={periodLabel}
-                      region={region}
-                      regions={data.boundaries.features
-                        .map((f) => f.properties.PROVINSI)
-                        .sort()}
-                      onRegion={setRegion}
-                      year={year}
-                      layer={layer}
-                      setLayer={setLayer}
-                      raw={selectedRaw}
-                      activity={harmonizedCount}
-                      counts={counts}
-                      anomaly={anomaly}
-                      markers={markers}
-                      setMarkers={setMarkers}
-                      borders={borders}
-                      setBorders={setBorders}
-                      density={density}
-                      setDensity={setDensity}
-                      highOnly={highOnly}
-                      setHighOnly={setHighOnly}
-                      onMethod={() => setModal("method")}
-                      month={month}
-                    />
+                    <div
+                      className={`map-floating map-layers ${panelOpen("layers") ? "is-open" : ""}`}
+                      id="map-layer-panel"
+                    >
+                      <div className="floating-heading">
+                        <h2>Sensor & filter</h2>
+                        <button
+                          className="map-panel-close"
+                          aria-label="Tutup panel filter"
+                          onClick={() => closeMapPanel("layers")}
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <RegionPanel
+                        isDemo={isDemo}
+                        periodLabel={periodLabel}
+                        region={region}
+                        regions={data.boundaries.features
+                          .map((f) => f.properties.PROVINSI)
+                          .sort()}
+                        onRegion={setRegion}
+                        year={year}
+                        layer={layer}
+                        setLayer={setLayer}
+                        raw={selectedRaw}
+                        activity={harmonizedCount}
+                        counts={counts}
+                        anomaly={anomaly}
+                        markers={markers}
+                        setMarkers={setMarkers}
+                        borders={borders}
+                        setBorders={setBorders}
+                        density={density}
+                        setDensity={setDensity}
+                        highOnly={highOnly}
+                        setHighOnly={setHighOnly}
+                        onMethod={() => setModal("method")}
+                        month={month}
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -823,32 +962,7 @@ export default function App() {
                 Sensor, metode & batas data <CircleHelp size={16} />
               </button>
             </section>
-            <div className="data-provenance" role="status">
-              <strong>{isDemo ? "Mode Demo" : "Cache NASA FIRMS"}</strong>
-              <p>
-                {isDemo
-                  ? "Observasi sintetis, bukan kondisi saat ini."
-                  : `Cakupan ${data.coverage?.start} sampai ${data.coverage?.end} (UTC), bukan pantauan langsung.`}
-              </p>
-              <details>
-                <summary>Sumber dan batas data</summary>
-                <p>{data.notice}</p>
-                {data.mode === "firms" ? (
-                  <p>
-                    Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT.
-                    Sinkronisasi: {data.updatedAt} / cakupan{" "}
-                    {data.coverage?.start} sampai {data.coverage?.end} (UTC).
-                    Cache tidak diperbarui otomatis; cakupan satelit bukan
-                    jaminan semua kebakaran teramati.
-                  </p>
-                ) : (
-                  <p>
-                    Observasi sintetis untuk demonstrasi. Tidak mencerminkan
-                    kondisi kebakaran saat ini.
-                  </p>
-                )}
-              </details>
-            </div>
+            {tab !== "map" && sourceDetails}
             <div className="data-notice">
               <InfoMark />
               <p>

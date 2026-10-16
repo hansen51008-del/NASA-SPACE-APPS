@@ -21,9 +21,7 @@ try {
     waitUntil: "networkidle",
   });
   await go("Peta aktivitas");
-  await page
-    .getByRole("heading", { name: "Peta aktivitas", exact: true })
-    .waitFor();
+  await page.locator(".map-canvas").waitFor();
   assert.equal(
     await page
       .getByRole("button", { name: "3D", exact: true })
@@ -148,7 +146,13 @@ try {
     await page.locator(".metric-main").first().innerText(),
     before,
   );
+  await page
+    .getByRole("button", { name: "Tutup panel wilayah", exact: true })
+    .click();
   await page.getByRole("button", { name: "Pilih Riau", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Wilayah & periode", exact: true })
+    .click();
   assert.equal(
     await page.getByLabel("Wilayah pantauan", { exact: true }).inputValue(),
     "Riau",

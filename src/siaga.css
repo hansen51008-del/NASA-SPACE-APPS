@@ -477,3 +477,451 @@
     max-width: none;
   }
 }
+/* Map tab only: full canvas with compact floating controls. */
+.map-layout {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  height: calc(100dvh - var(--app-header-height));
+  min-height: 420px;
+  margin: 0;
+  padding: 0;
+}
+.map-layout > .page-heading,
+.map-layout > footer,
+.map-layout > .data-notice {
+  display: none;
+}
+.map-layout #panel-map,
+.map-layout .workspace,
+.map-layout .map-panel {
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.map-layout .workspace {
+  display: block;
+}
+.map-layout .map-panel {
+  position: relative;
+}
+.map-layout .map-heading {
+  display: none;
+}
+.map-layout .atlas-map:not(.is-fullscreen) {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  border-radius: 0;
+}
+.map-layout .atlas-map .terrain-view,
+.map-layout .atlas-map .terrain-loading,
+.map-layout .atlas-map .geography {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+}
+.map-layout .map-topline {
+  display: none;
+}
+.map-layout .map-view-switch {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 24px);
+}
+.map-layout .map-view-switch button {
+  min-height: 44px;
+}
+.map-floating {
+  position: absolute;
+  z-index: 6;
+  top: 72px;
+  width: 270px;
+  max-height: calc(100% - 180px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px;
+  border: 1px solid #506258;
+  border-radius: 12px;
+  background: #18241ff2;
+  box-shadow: 0 8px 24px #0004;
+  scrollbar-width: thin;
+}
+.map-location {
+  left: 16px;
+}
+.map-layers {
+  right: 16px;
+  padding: 0;
+}
+.floating-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.floating-heading h2 {
+  font-size: 15px;
+  margin: 0;
+}
+.map-layers > .floating-heading {
+  padding: 14px 14px 0;
+}
+.map-panel-close,
+.map-bottom-controls {
+  display: none;
+}
+.map-location .context-bar {
+  display: block;
+  margin: 0 0 12px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.map-location .context-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  line-height: 1.6;
+}
+.map-location .context-controls {
+  margin-top: 8px;
+}
+.map-location .citizen-filters {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  margin-bottom: 12px;
+  background: transparent;
+}
+.map-location .citizen-filters label {
+  display: grid;
+  gap: 6px;
+}
+.map-location .province-search {
+  width: 100%;
+  max-width: none;
+  margin: 12px 0;
+}
+.map-location .data-provenance {
+  padding: 10px;
+  margin: 12px 0;
+}
+.map-location .replay {
+  padding: 12px 0;
+}
+.map-location .replay .months {
+  flex-wrap: wrap;
+}
+.map-location .coverage-explanation {
+  font-size: 12px;
+  margin: 0 0 10px;
+}
+.map-layout .region-panel {
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+.map-layout .region-panel .panel-section {
+  padding: 12px 14px;
+}
+.map-layout .region-panel button,
+.map-layout .toggle-label,
+.map-layout select,
+.map-location > button {
+  min-height: 44px;
+}
+.map-layout .terrain-destinations {
+  top: 66px;
+  left: 300px;
+  right: 300px;
+}
+.map-layout .terrain-adjustments {
+  right: 300px;
+  max-height: calc(100% - 160px);
+  overflow-y: auto;
+}
+.map-layout .terrain-settings-trigger {
+  right: 300px;
+}
+.map-layout .map-tools {
+  top: auto;
+  bottom: 110px;
+}
+.map-layout .maplibregl-ctrl-top-right {
+  top: 0;
+}
+.map-layout .map-selection {
+  max-width: calc(100% - 32px);
+}
+@media (max-width: 760px) {
+  .map-layout {
+    min-height: 360px;
+    padding-bottom: 60px;
+  }
+  .map-layout .map-view-switch {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: calc(100% - 20px);
+    top: 8px;
+  }
+  .map-layout .map-view-switch button {
+    white-space: normal;
+    padding: 4px;
+    line-height: 1.3;
+    min-width: 0;
+    min-height: 44px;
+    font-size: 10px;
+  }
+  .map-floating {
+    display: none;
+    top: auto;
+    bottom: 68px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: 45%;
+    z-index: 12;
+  }
+  .map-floating.is-open {
+    display: block;
+  }
+  .map-panel-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid #506258;
+    border-radius: 6px;
+    background: #26372e;
+    color: #eef2eb;
+  }
+  .map-bottom-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    padding: 6px 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: #18241f;
+    z-index: 13;
+  }
+  .map-bottom-controls button {
+    min-height: 44px;
+    border: 1px solid #718579;
+    border-radius: 8px;
+    color: #eef2eb;
+    background: #26372e;
+  }
+  .map-bottom-controls button[aria-expanded="true"] {
+    background: #455f4e;
+  }
+  .map-layout .terrain-destinations {
+    top: 62px;
+    left: 8px;
+    right: 54px;
+  }
+  .map-layout .terrain-adjustments {
+    left: 8px;
+    right: 8px;
+    bottom: 100px;
+    max-height: 45%;
+  }
+  .map-layout .terrain-settings-trigger {
+    right: 8px;
+    bottom: 105px;
+  }
+  .map-layout .terrain-caption {
+    display: none;
+  }
+  .map-layout .map-legend {
+    bottom: 62px;
+  }
+  .map-layout .map-selection {
+    bottom: 36px;
+  }
+  .map-layout .map-source {
+    font-size: 8px;
+    bottom: 2px;
+    left: 4px;
+    right: 4px;
+    max-width: none;
+  }
+  .map-layout .map-tools button,
+  .map-layout .map-selection button,
+  .map-layout .maplibregl-ctrl-group button,
+  .map-layout .terrain-destinations button,
+  .map-layout .terrain-adjustments button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .map-layout .maplibregl-ctrl-top-right {
+    top: 62px;
+  }
+  .map-layout .maplibregl-ctrl-bottom-right {
+    bottom: 22px;
+  }
+}
+.map-layout .map-location .province-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: relative;
+  padding: 0 10px;
+  border: 1px solid #506258;
+  border-radius: 6px;
+  background: #14251f;
+}
+.map-location .province-search input {
+  flex: 1;
+  min-height: 44px;
+  width: 100px;
+}
+.map-location .province-search > button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.map-location .province-results {
+  position: static;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: none;
+}
+.map-location .province-results li {
+  min-height: 44px;
+  flex-wrap: wrap;
+}
+.map-location .replay-header,
+.map-location .replay-track {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.map-location .month-strip {
+  flex-wrap: wrap;
+}
+.map-location .replay button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.map-layout .map-floating {
+  max-height: calc(100% - 220px);
+}
+@media (min-width: 761px) {
+  .map-layout .map-tools {
+    right: 300px;
+  }
+  .map-layout .maplibregl-ctrl-top-right {
+    right: 300px;
+    top: 68px;
+  }
+}
+@media (max-width: 760px) {
+  .map-layout .map-floating {
+    max-height: 45%;
+  }
+}
+.map-layout .terrain-gl .maplibregl-ctrl-top-right {
+  right: 300px;
+  top: 68px;
+}
+.map-layout .terrain-status {
+  left: 300px;
+  right: 300px;
+  top: 126px;
+  width: auto;
+  max-width: none;
+}
+.map-layout .terrain-caption {
+  left: 300px;
+}
+.map-location .month-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: visible;
+  width: 100%;
+  flex-basis: 100%;
+}
+.map-location .replay-header {
+  display: flex;
+}
+@media (max-width: 760px) {
+  .map-layout .terrain-gl .maplibregl-ctrl-top-right {
+    right: 0;
+    top: 62px;
+  }
+  .map-layout .terrain-gl .maplibregl-ctrl-bottom-right {
+    bottom: 22px;
+  }
+  .map-layout .terrain-status {
+    left: 8px;
+    right: 54px;
+    top: 114px;
+  }
+}
+.map-floating > .floating-heading {
+  position: sticky;
+  top: -14px;
+  z-index: 2;
+  background: #18241f;
+  padding-block: 8px;
+  border-bottom: 1px solid #506258;
+}
+.map-layers > .floating-heading {
+  top: 0;
+}
+@media (max-width: 760px) {
+  .map-layout .is-dimensional .map-selection {
+    bottom: 150px;
+  }
+  .map-layout .terrain-gl .maplibregl-ctrl-attrib-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+.map-floating:not(.is-open) {
+  display: none;
+}
+@media (min-width: 761px) {
+  .map-bottom-controls {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    z-index: 7;
+    top: 12px;
+    left: 16px;
+    right: 16px;
+    pointer-events: none;
+  }
+  .map-bottom-controls button {
+    pointer-events: auto;
+    min-height: 44px;
+    width: 270px;
+    border: 1px solid #506258;
+    border-radius: 8px;
+    color: #eef2eb;
+    background: #18241ff2;
+  }
+  .map-panel-close {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    background: transparent;
+    border: 1px solid #506258;
+    border-radius: 6px;
+    color: #eef2eb;
+  }
+}

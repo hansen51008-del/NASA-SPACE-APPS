@@ -35,8 +35,20 @@ try {
       .getByRole("button", { name: "Buka Peta aktivitas", exact: true })
       .click();
     await page.getByRole("button", { name: "2D", exact: true }).click();
+    if (width === 360)
+      await page
+        .getByRole("button", { name: "Wilayah & periode", exact: true })
+        .click();
     await page.getByLabel("Wilayah pemantauan").selectOption("Riau");
+    if (width === 360)
+      await page
+        .getByRole("button", { name: "Sensor & filter", exact: true })
+        .click();
     await page.getByRole("button", { name: "VIIRS", exact: true }).click();
+    if (width === 360)
+      await page
+        .getByRole("button", { name: "Tutup panel filter", exact: true })
+        .click();
     assert.equal(await page.locator(".citizen-grid").isVisible(), false);
     assert.equal(await page.locator(".metrics").isVisible(), false);
     await page.screenshot({
@@ -93,6 +105,10 @@ try {
         .getAttribute("aria-pressed"),
       "true",
     );
+    if (width === 360)
+      await page
+        .getByRole("button", { name: "Sensor & filter", exact: true })
+        .click();
     assert.equal(
       await page
         .getByRole("button", { name: "VIIRS", exact: true })

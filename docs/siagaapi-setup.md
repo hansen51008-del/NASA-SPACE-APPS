@@ -11,7 +11,7 @@ npm test
 npm run build
 ```
 
-Di PowerShell gunakan `npm.cmd` jika eksekusi `npm.ps1` diblokir. Mode Demo berjalan tanpa key. Untuk akses ponsel pada Wi-Fi yang sama gunakan `npm run dev:lan` dan alamat Network yang dicetak Vite.
+Di PowerShell gunakan `npm.cmd` jika eksekusi `npm.ps1` diblokir. Cache publik yang disertakan dapat dibaca tanpa key; Mode Demo digunakan bila cache hilang atau tidak valid. Untuk akses ponsel pada Wi-Fi yang sama gunakan `npm run dev:lan` dan alamat Network yang dicetak Vite.
 
 ## Mengaktifkan observasi NASA FIRMS
 
@@ -34,10 +34,24 @@ Pada server/CI, injeksikan environment variable dari secret manager lalu jalanka
 1. `scripts/run-sync.mjs` membundel skrip TypeScript server ke direktori sementara, menjalankannya, lalu menghapus bundle sementara.
 2. `scripts/sync-firms.ts` membaca key dari environment dan mengambil CSV resmi **MODIS_NRT** serta **VIIRS_SNPP_NRT** untuk bounding box Indonesia, selama tiga hari UTC yang telah selesai. Format endpoint dan batas request mengikuti [FIRMS Area API](https://firms.modaps.eosdis.nasa.gov/api/area/). Ini bukan pengambilan arsip bulanan atau feed langsung.
 3. Parser bersama memvalidasi CSV, menormalisasi confidence, menyaring titik di luar poligon Indonesia, menetapkan provinsi, dan mempertahankan produk, satelit, versi, baris sumber, serta waktu observasi. Bila salah satu produk gagal atau baris tidak valid, cache lama tidak diganti.
-4. Cache `public/data/firms-cache.json` berisi CSV observasi publik dan metadata waktu/cakupan, **tanpa key maupun URL ber-key**. File ini diabaikan Git. Cache diganti setelah kedua produk tervalidasi; tidak digabung dengan data sintetis.
+4. Cache `public/data/firms-cache.json` berisi CSV observasi publik dan metadata waktu/cakupan, **tanpa key maupun URL ber-key**. Cache publik ini sengaja dimasukkan ke commit agar deploy statis memakai observasi nyata meskipun sinkronisasi tidak tersedia. Untuk memperbarui salinan di repositori, jalankan `npm run sync:firms`, periksa bahwa cache hanya berisi data publik, lalu commit ulang cache. Key tetap server-side dan tidak pernah di-commit. File sementara `*.tmp` tetap diabaikan Git. Cache diganti setelah kedua produk tervalidasi; tidak digabung dengan data sintetis.
 5. `observationProvider.ts` membaca cache dan menormalisasi observasi ke schema yang sudah digunakan peta. Cache hilang, tidak valid, atau gagal dimuat menghasilkan data sintetis berlabel **Mode Demo**. Tidak ada key = tidak ada request NASA dari skrip. Cache hasil sinkronisasi lama yang masih ada tetap dapat dibaca, dengan waktunya terlihat.
 
 Key tidak pernah dibaca frontend. Error sinkronisasi tidak mencetak URL, key, atau isi respons upstream. Pengujian API menggunakan fixture dan tidak membuktikan request NASA berhasil; keberhasilan nyata baru ditandai saat sinkronisasi dengan key valid selesai.
+
+## Deploy ke Vercel
+
+Konfigurasi `vercel.json` memakai output `dist` dan perintah build berikut, dengan **titik koma**, bukan `&&`:
+
+```sh
+npm run sync:firms; npm run build
+```
+
+Di dashboard proyek Vercel, tambahkan environment variable server **NASA_FIRMS_MAP_KEY** untuk lingkungan deploy yang digunakan. Nama ini **BUKAN** berawalan `VITE_`. Nilai key hanya tersedia pada proses sinkronisasi server-side, tidak ditulis ke source, Git, frontend, URL aplikasi, cache, atau log.
+
+Setiap deploy ulang menjalankan sinkronisasi untuk memperbarui cache sebelum build. Jika key valid dan request berhasil, hasil baru dipakai dalam artefak statis. Jika sync gagal atau key tidak ada, titik koma memastikan `npm run build` tetap dijalankan, memakai cache publik yang sudah ter-commit sebagai fallback. Jika cache fallback juga hilang atau tidak valid, UI masuk Mode Demo; cache yang terlalu lama tetap mengikuti batas penilaian keselamatan yang dijelaskan di bawah.
+
+Pembaruan cache saat build Vercel hanya berlaku pada artefak deploy itu dan tidak otomatis mengubah Git. Untuk memperbarui fallback di repositori, jalankan `npm run sync:firms` secara lokal, periksa cache, lalu commit ulang. File `.env*`, `node_modules/`, `dist/`, `test-results/`, dan semua `*.tmp` tetap diabaikan Git. Konfigurasi ini tidak menjalankan commit, push, atau deploy dengan sendirinya.
 
 ## Indikator risiko yang transparan
 

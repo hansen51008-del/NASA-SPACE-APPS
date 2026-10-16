@@ -1,0 +1,4 @@
+{
+  "buildCommand": "npm run sync:firms; npm run build",
+  "outputDirectory": "dist"
+}

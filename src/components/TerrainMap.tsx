@@ -24,6 +24,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "../terrain.css";
 import { useMapOrbit } from "./useMapOrbit";
 import { provinceBorders } from "./provinceBorders";
+import { useMapQuality } from "./MapQuality";
 setWorkerUrl(workerUrl);
 
 interface Props {
@@ -85,6 +86,8 @@ const terrainPixelRatio = (width: number, height: number) =>
   );
 
 export default function TerrainMap(props: Props) {
+  const {quality} = useMapQuality();
+  const qualityRef = useRef(quality); qualityRef.current=quality;
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<GLMap | null>(null);
   const current = useRef(props);
@@ -201,7 +204,7 @@ export default function TerrainMap(props: Props) {
         minZoom: 3,
         maxZoom: 15,
         renderWorldCopies: false,
-        pixelRatio: terrainPixelRatio(
+        pixelRatio: qualityRef.current === "low" ? 1 : terrainPixelRatio(
           host.current.clientWidth,
           host.current.clientHeight,
         ),
@@ -294,6 +297,7 @@ export default function TerrainMap(props: Props) {
             },
             {
               id: "satellite-texture",
+              layout: {visibility: qualityRef.current === "low" ? "none" : "visible"},
               type: "raster",
               source: "imagery",
               minzoom: 8,
@@ -343,7 +347,7 @@ export default function TerrainMap(props: Props) {
               },
             },
           ],
-          terrain: { source: "elevation", exaggeration: 1.5 },
+          terrain: { source: "elevation", exaggeration: qualityRef.current === "low" ? 1 : 1.5 },
           sky: {
             "sky-color": "#789bb8",
             "horizon-color": "#d6ccb7",
@@ -599,6 +603,9 @@ export default function TerrainMap(props: Props) {
           "circle-pitch-alignment": "map",
         },
       });
+      const motion = (moving: boolean) => host.current?.dispatchEvent(new CustomEvent("siaga-map-motion", {bubbles:true,detail:moving}));
+      map.on("movestart", () => motion(true));
+      map.on("moveend", () => motion(false));
       map.on("click", (e) => {
         if (current.current.showMarkers) {
           const hit = map.queryRenderedFeatures(
@@ -637,7 +644,7 @@ export default function TerrainMap(props: Props) {
     });
     const observer = new ResizeObserver(() => {
       if (!host.current) return;
-      const ratio = terrainPixelRatio(
+      const ratio = qualityRef.current === "low" ? 1 : terrainPixelRatio(
         host.current.clientWidth,
         host.current.clientHeight,
       );
@@ -661,7 +668,7 @@ export default function TerrainMap(props: Props) {
       map.setLayoutProperty(
         id,
         "visibility",
-        surface === "satellite" ? "visible" : "none",
+        surface === "satellite" && (id !== "satellite-texture" || quality !== "low") ? "visible" : "none",
       );
     }
     map.setLayoutProperty(
@@ -675,7 +682,9 @@ export default function TerrainMap(props: Props) {
       "hillshade-exaggeration",
       surface === "satellite" ? 0.58 : 0.62,
     );
-  }, [ready, surface]);
+    map.setPixelRatio(quality === "low" ? 1 : terrainPixelRatio(host.current?.clientWidth ?? 1,host.current?.clientHeight ?? 1));
+    map.setTerrain({source:"elevation",exaggeration:quality === "low"?1:relief});
+  }, [ready, surface, quality, relief]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -736,8 +745,6 @@ export default function TerrainMap(props: Props) {
     ]);
   }, [
     ready,
-    provinceData,
-    hotspots,
     props.density,
     props.provinceColours,
     props.showBorders,
@@ -748,17 +755,17 @@ export default function TerrainMap(props: Props) {
 
   // Only rebuild worker GeoJSON tiles when their data changes.
   useEffect(() => {
-    if (ready)
+    if (!ready) return;
+    const frame = requestAnimationFrame(() => {
       (mapRef.current?.getSource("provinces") as GeoJSONSource)?.setData(
         provinceData,
       );
-  }, [ready, provinceData]);
-  useEffect(() => {
-    if (ready)
       (mapRef.current?.getSource("detections") as GeoJSONSource)?.setData(
         hotspots,
       );
-  }, [ready, hotspots]);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [ready, provinceData, hotspots]);
 
   const nationalView = () => {
     mapRef.current?.fitBounds(
@@ -830,7 +837,7 @@ export default function TerrainMap(props: Props) {
         map={ready ? mapRef.current : null}
         records={props.records}
         selected={props.selected}
-        visible={props.showMarkers}
+        visible={props.showMarkers && quality !== "low"}
       />
       <div
         className="terrain-destinations"

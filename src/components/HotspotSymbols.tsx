@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { CSSProperties } from "react";
 import type { GeoProjection } from "d3-geo";
 import type { Hotspot } from "../types";
@@ -11,18 +11,21 @@ export interface MapSymbol {
 
 // All symbols stay anchored to observed coordinates. Decorative flames do not
 // represent measured flame height, individual incidents, or a burned perimeter.
-export default function HotspotSymbols({
+const HotspotSymbols = memo(function HotspotSymbols({
   symbols,
   projection,
   selected,
   onInspect,
+  animated = true,
 }: {
+  animated?: boolean;
   symbols: MapSymbol[];
   projection: GeoProjection;
   selected: string;
   onInspect: (record: Hotspot) => void;
 }) {
   const flameIds = useMemo(() => {
+    if (!animated) return new Set<string>();
     const occupied = new Set<string>();
     const ids = new Set<string>();
     const candidates = symbols
@@ -42,7 +45,7 @@ export default function HotspotSymbols({
       if (ids.size >= 100) break;
     }
     return ids;
-  }, [symbols, selected]);
+  }, [symbols, selected, animated]);
 
   return (
     <g className="hotspot-symbols" pointerEvents="none">
@@ -172,4 +175,5 @@ export default function HotspotSymbols({
         })}
     </g>
   );
-}
+});
+export default HotspotSymbols;

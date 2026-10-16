@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Marker, type Map as TerrainMap } from "maplibre-gl";
 import type { Hotspot } from "../types";
 import "../selected-fire.css";
@@ -35,11 +35,13 @@ export default function SelectedFireEffects({
   selected: string;
   visible: boolean;
 }) {
+  const shared = useRef<ReturnType<typeof createFireRenderer> | null>(null);
+  useEffect(() => () => {shared.current?.dispose();shared.current=null;}, [map, visible]);
   useEffect(() => {
     if (!map || !visible || selected === "Indonesia") return;
     const sites = selectedFireSites(records, selected);
     if (!sites.length) return;
-    const renderer = createFireRenderer();
+    const renderer = shared.current ??= createFireRenderer();
     const canvases: CanvasRenderingContext2D[] = [];
     const markers = sites.map((record, index) => {
       const element = document.createElement("div");
@@ -184,7 +186,6 @@ export default function SelectedFireEffects({
       document.removeEventListener("visibilitychange", resume);
       motion.removeEventListener("change", syncMotion);
       window.clearInterval(motionCheck);
-      renderer.dispose();
       map.off("move", cameraChanged);
       map.off("resize", cameraChanged);
       markers.forEach((marker) => marker.remove());

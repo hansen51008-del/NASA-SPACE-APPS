@@ -1,0 +1,121 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`preserves original counts, scores, anomalies, grid and CSV values across map quality modes > Indonesia/null 1`] = `
+{
+  "anomaly": {
+    "baselineYears": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+    ],
+    "change": 37.105298820978454,
+    "current": 10117,
+    "enough": true,
+    "mean": 7379,
+    "sd": 2349.3047482180764,
+    "threshold": 12077.609496436153,
+    "unusual": false,
+  },
+  "count": 10117,
+  "csv": "c91cbd4c5d72b50cc3029fdc5091e64b9640166e724ca70f0160ece87544fde6",
+  "grid": 47,
+  "harmonizedCount": 10117,
+  "risk": {
+    "change": 37.105298820978454,
+    "count": 10117,
+    "days": 365,
+    "high": 5827,
+    "level": "Siaga",
+    "note": "Simulasi dengan data sintetis. Bukan status keselamatan aktual.",
+    "period": "2025-01-01 — 2025-12-31 (UTC)",
+    "points": {
+      "activity": 50,
+      "confidence": 30,
+      "increase": 7.421059764195691,
+    },
+    "score": 87,
+  },
+}
+`;
+
+exports[`preserves original counts, scores, anomalies, grid and CSV values across map quality modes > Maluku/1 1`] = `
+{
+  "anomaly": {
+    "baselineYears": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+    ],
+    "change": 0,
+    "current": 1,
+    "enough": true,
+    "mean": 1,
+    "sd": 0,
+    "threshold": 1,
+    "unusual": false,
+  },
+  "count": 1,
+  "csv": "82542d28ae1e980b693b1931e6c6f3b012840624dff95a9374b6cfb096ff2b5c",
+  "grid": 1,
+  "harmonizedCount": 1,
+  "risk": {
+    "change": 0,
+    "count": 1,
+    "days": 31,
+    "high": 1,
+    "level": "Aman",
+    "note": "Simulasi dengan data sintetis. Bukan status keselamatan aktual.",
+    "period": "2025-01-01 — 2025-01-31 (UTC)",
+    "points": {
+      "activity": 0.3225806451612903,
+      "confidence": 0.3225806451612903,
+      "increase": 0,
+    },
+    "score": 1,
+  },
+}
+`;
+
+exports[`preserves original counts, scores, anomalies, grid and CSV values across map quality modes > Riau/9 1`] = `
+{
+  "anomaly": {
+    "baselineYears": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+    ],
+    "change": 206.2730627306273,
+    "current": 332,
+    "enough": true,
+    "mean": 108.4,
+    "sd": 47.0089353208515,
+    "threshold": 202.41787064170302,
+    "unusual": true,
+  },
+  "count": 332,
+  "csv": "b1024fc436736d55428fb14b243b4b116070bd3afc75f0ac6bc48cd94711fc7d",
+  "grid": 14,
+  "harmonizedCount": 332,
+  "risk": {
+    "change": 206.2730627306273,
+    "count": 332,
+    "days": 30,
+    "high": 183,
+    "level": "Siaga",
+    "note": "Simulasi dengan data sintetis. Bukan status keselamatan aktual.",
+    "period": "2025-09-01 — 2025-09-30 (UTC)",
+    "points": {
+      "activity": 50,
+      "confidence": 30,
+      "increase": 20,
+    },
+    "score": 100,
+  },
+}
+`;

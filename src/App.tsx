@@ -24,20 +24,12 @@ import type { Layer, Provinces } from "./types";
 import { MONTHS, YEARS, number } from "./types";
 import { loadObservations } from "./services/observationProvider";
 import type { ObservationDataset } from "./services/observationProvider";
-import { calculateRisk, riskBrief } from "./services/riskService";
+import { riskBrief } from "./services/riskService";
 import RiskStatusCard from "./components/RiskStatusCard";
 import RiskBrief from "./components/RiskBrief";
 import EmergencyActionPanel from "./components/EmergencyActionPanel";
-import {
-  harmonize,
-  largestCell,
-  layerRecords,
-} from "./services/harmonizationService";
-import {
-  analyze,
-  monthlyCounts,
-  regionRanking,
-} from "./services/anomalyService";
+import { useDashboardAnalysis } from "./components/useDashboardAnalysis";
+import { MapPerformance, QualityControl } from "./components/MapQuality";
 import IndonesiaMap from "./components/IndonesiaMap";
 import RegionPanel from "./components/RegionPanel";
 import YearSelector from "./components/YearSelector";
@@ -47,7 +39,7 @@ import ActivityCalendar from "./components/ActivityCalendar";
 import YearComparison from "./components/YearComparison";
 import { buildBrief } from "./components/FireBrief";
 import CacheActivity from "./components/CacheActivity";
-import { coveredMonth, inPeriod } from "./services/coveragePeriod";
+import { coveredMonth } from "./services/coveragePeriod";
 import ProvinceSearch from "./components/ProvinceSearch";
 import RegionLeaders from "./components/RegionLeaders";
 type View = "history" | "compare";
@@ -148,14 +140,15 @@ export default function App() {
     void load();
     return () => controller.abort();
   }, []);
+  const {analysis, pending, analysisError} = useDashboardAnalysis(data,{region,year,month,layer,highOnly});
   useEffect(() => {
-    if (!playing || data?.mode === "firms") return;
+    if (!playing || data?.mode === "firms" || pending) return;
     const timer = window.setInterval(
       () => setMonth((m) => (m === null || m === 12 ? 1 : m + 1)),
       1300 / speed,
     );
     return () => window.clearInterval(timer);
-  }, [playing, speed, data?.mode]);
+  }, [playing, speed, data?.mode, pending]);
   useEffect(() => {
     if (modal) dialog.current?.showModal();
     else dialog.current?.close();
@@ -184,78 +177,7 @@ export default function App() {
   const hasCoverage =
     isDemo ||
     (month === null ? !!coverage : coveredMonth(coverage, year, month));
-  const risk = useMemo(
-    () => (data ? calculateRisk(data, region, year, month) : null),
-    [data, region, year, month],
-  );
-  const rawAll = useMemo(
-    () =>
-      data?.records.filter((r) => !highOnly || r.confidence === "high") ?? [],
-    [data, highOnly],
-  );
-  const allActivity = useMemo(
-    () => layerRecords(rawAll, layer),
-    [rawAll, layer],
-  );
-  const regionalActivity = useMemo(
-    () =>
-      allActivity.filter(
-        (r) => region === "Indonesia" || r.province === region,
-      ),
-    [allActivity, region],
-  );
-  const mapRecords = useMemo(
-    () => allActivity.filter((r) => inPeriod(r, year, month, coverage)),
-    [allActivity, year, month, coverage],
-  );
-  const selectedActivity = useMemo(
-    () =>
-      mapRecords.filter((r) => region === "Indonesia" || r.province === region),
-    [mapRecords, region],
-  );
-  const selectedRaw = useMemo(
-    () =>
-      rawAll.filter(
-        (r) =>
-          inPeriod(r, year, month, coverage) &&
-          (region === "Indonesia" || r.province === region),
-      ),
-    [rawAll, year, region, month, coverage],
-  );
-  const harmonizedCount = useMemo(
-    () => harmonize(selectedRaw).length,
-    [selectedRaw],
-  );
-  const counts = useMemo(
-    () => monthlyCounts(regionalActivity, year),
-    [regionalActivity, year],
-  );
-  const history = useMemo(
-    () =>
-      years.map((y) => ({
-        year: y,
-        counts: monthlyCounts(regionalActivity, y),
-      })),
-    [regionalActivity, years],
-  );
-  const baseline = useMemo(() => {
-    const earlier = history.filter((h) => h.year < year);
-    return MONTHS.map((_, i) =>
-      earlier.length
-        ? earlier.reduce((sum, h) => sum + h.counts[i], 0) / earlier.length
-        : 0,
-    );
-  }, [history, year]);
-  const anomaly = useMemo(
-    () => analyze(regionalActivity, year, month, isDemo ? years : []),
-    [regionalActivity, year, month, years, isDemo],
-  );
-  const ranking = useMemo(() => regionRanking(mapRecords), [mapRecords]);
-  const activeRegions = new Set(selectedActivity.map((r) => r.province)).size;
-  const high = selectedActivity.filter((r) => r.confidence === "high").length;
-  const highPercent = selectedActivity.length
-    ? Math.round((high / selectedActivity.length) * 100)
-    : 0;
+  const {risk,regionalActivity,mapRecords,selectedActivity,selectedRaw,harmonizedCount,counts,history,baseline,anomaly,ranking,activeRegions,high,highPercent,gridCount,monthAnomalies} = analysis;
   const changeYear = (y: number) => {
     if (!years.includes(y)) return;
     setYear(y);
@@ -278,6 +200,7 @@ export default function App() {
     });
   }
   function exportData() {
+    if (pending || analysisError) return;
     const csvValue = (value: unknown) =>
       `"${String(value ?? "").replaceAll('"', '""')}"`;
     const header = [
@@ -512,7 +435,7 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main
+      <main aria-busy={pending}
         className={
           tab === "map"
             ? "map-layout"
@@ -524,6 +447,9 @@ export default function App() {
           { "--app-header-height": `${headerHeight}px` } as React.CSSProperties
         }
       >
+        {pending && <div className="analysis-progress" role="status">Memperbarui analisis…</div>}
+        {analysisError && <p role="alert">Analisis tidak dapat dimuat. Muat ulang halaman.</p>}
+        <MapPerformance active={tab === "map"} animating={playing || (markers && region !== "Indonesia")} />
         <div className="page-heading">
           <div>
             <div className="breadcrumb">
@@ -612,7 +538,7 @@ export default function App() {
               {risk && (
                 <div className="citizen-grid">
                   <div className="citizen-summary">
-                    <RiskStatusCard risk={risk} region={region} />
+                    <RiskStatusCard risk={pending || analysisError ? {...risk,level:null,score:null,note:"Analyse sedang diperbarui."} : risk} region={region} />
                     <RiskBrief
                       risk={risk}
                       region={region}
@@ -796,6 +722,7 @@ export default function App() {
                           <X size={18} />
                         </button>
                       </div>
+                      <QualityControl />
                       <RegionPanel
                         isDemo={isDemo}
                         periodLabel={periodLabel}
@@ -891,7 +818,7 @@ export default function App() {
                   label="Sel grid terpadat"
                   value={
                     hasCoverage
-                      ? number(largestCell(selectedActivity))
+                      ? number(gridCount)
                       : "Belum dapat dinilai"
                   }
                   suffix="obs."
@@ -1000,7 +927,7 @@ export default function App() {
                   </p>
                   <div className="critical-months">
                     {MONTHS.map((name, i) => {
-                      const a = analyze(regionalActivity, year, i + 1, years);
+                      const a = monthAnomalies[i];
                       return (
                         <button
                           key={name}

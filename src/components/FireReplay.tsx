@@ -24,17 +24,17 @@ export default function FireReplay({
     <div className="replay">
       <div className="replay-header">
         <span className="eyebrow">
-          <span className="tiny-orange" /> FIRE REPLAY
+          <span className="tiny-orange" /> PUTAR ARSIP DEMO
         </span>
         <div className="replay-period">
           <strong>
-            {month ? `${MONTHS[month - 1]} ${year}` : `Jan – Dec ${year}`}
+            {month ? `${MONTHS[month - 1]} ${year}` : `Jan – Des ${year}`}
           </strong>
           <span>
             {number(
               month ? counts[month - 1] : counts.reduce((sum, n) => sum + n, 0),
             )}{" "}
-            observations
+            observasi
           </span>
         </div>
         <button
@@ -44,14 +44,14 @@ export default function FireReplay({
             setMonth(null);
           }}
         >
-          <RotateCcw size={12} /> Reset
+          <RotateCcw size={12} /> Atur ulang
         </button>
       </div>
       <div className="replay-track">
         <div className="play-controls">
           <button
             className="step-button"
-            aria-label="Previous month"
+            aria-label="Bulan sebelumnya"
             onClick={() => {
               setPlaying(false);
               setMonth(month === null || month === 1 ? 12 : month - 1);
@@ -61,7 +61,7 @@ export default function FireReplay({
           </button>
           <button
             className={`play-button ${playing ? "playing" : ""}`}
-            aria-label={playing ? "Pause replay" : "Play replay"}
+            aria-label={playing ? "Jeda pemutaran" : "Putar arsip demo"}
             onClick={() => {
               if (!playing && month === null) setMonth(1);
               setPlaying(!playing);
@@ -75,7 +75,7 @@ export default function FireReplay({
           </button>
           <button
             className="step-button"
-            aria-label="Next month"
+            aria-label="Bulan berikutnya"
             onClick={() => {
               setPlaying(false);
               setMonth(month === null || month === 12 ? 1 : month + 1);
@@ -88,9 +88,9 @@ export default function FireReplay({
           {MONTHS.map((m, i) => (
             <button
               key={m}
-              aria-label={`Show ${m}`}
+              aria-label={`Tampilkan ${m}`}
               aria-pressed={month === i + 1}
-              title={`${m} ${year} · ${number(counts[i])} observations`}
+              title={`${m} ${year} · ${number(counts[i])} observasi`}
               className={`month-button ${month === i + 1 ? "active" : ""}`}
               onClick={() => {
                 setPlaying(false);
@@ -109,7 +109,7 @@ export default function FireReplay({
         </div>
         <button
           className="speed-button"
-          aria-label="Change replay speed"
+          aria-label="Ubah kecepatan pemutaran"
           onClick={() => setSpeed(speed === 1 ? 2 : speed === 2 ? 0.5 : 1)}
         >
           {speed}×

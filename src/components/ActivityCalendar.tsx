@@ -12,10 +12,10 @@ export default function ActivityCalendar({
   return (
     <section className="card calendar-card">
       <div className="card-heading">
-        <h3>Historical activity</h3>
+        <h3>Pola historis</h3>
         <span className="subtle-tag">2020–2025</span>
       </div>
-      <p className="helper">A six-year view of seasonal patterns</p>
+      <p className="helper">Pola musiman dalam enam tahun demo</p>
       <div className="calendar-grid">
         <span />
         {MONTHS.map((m) => (
@@ -38,15 +38,15 @@ export default function ActivityCalendar({
                     : "#252c27",
                 }}
                 onClick={() => onSelect(year, i + 1)}
-                aria-label={`${MONTHS[i]} ${year}: ${number(n)} observations`}
-                title={`${MONTHS[i]} ${year} · ${number(n)} observations`}
+                aria-label={`${MONTHS[i]} ${year}: ${number(n)} observasi`}
+                title={`${MONTHS[i]} ${year} · ${number(n)} observasi`}
               />
             ))}
           </div>
         ))}
       </div>
       <div className="calendar-legend">
-        <span>Less activity</span>
+        <span>Lebih sedikit</span>
         {[0, 1, 2, 3, 4].map((n) => (
           <i
             key={n}
@@ -55,7 +55,7 @@ export default function ActivityCalendar({
             }}
           />
         ))}
-        <span>More</span>
+        <span>Lebih banyak</span>
       </div>
     </section>
   );

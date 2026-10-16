@@ -68,12 +68,12 @@ button:hover {
 .topbar nav button.active:after {
   display: none;
 }
-.challenge-label {
+.observatory-label {
   color: #b2c4cc;
   font-size: 9px;
   letter-spacing: 0.8px;
 }
-.challenge-label b {
+.observatory-label b {
   color: #a9bfc9;
   border: 1px solid #3c5361;
   border-radius: 3px;
@@ -1029,7 +1029,7 @@ footer > span:last-child {
   .header-end {
     gap: 12px;
   }
-  .challenge-label {
+  .observatory-label {
     font-size: 8px;
   }
   main {
@@ -1093,7 +1093,7 @@ footer > span:last-child {
     padding: 0 22px;
     gap: 15px;
   }
-  .header-end .challenge-label {
+  .header-end .observatory-label {
     display: none;
   }
   h1 {

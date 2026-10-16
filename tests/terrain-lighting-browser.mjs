@@ -45,11 +45,11 @@ try {
   await page.locator('.terrain-view[data-ready="true"]').waitFor();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page
-    .getByRole("button", { name: "Province colours", exact: true })
+    .getByRole("button", { name: "Warna provinsi", exact: true })
     .click();
-  await page.getByLabel("Hotspot detections", { exact: true }).uncheck();
-  await page.getByLabel("Province boundaries", { exact: true }).uncheck();
-  await page.getByRole("button", { name: "Satellite", exact: true }).click();
+  await page.getByLabel("Deteksi hotspot", { exact: true }).uncheck();
+  await page.getByLabel("Batas provinsi", { exact: true }).uncheck();
+  await page.getByRole("button", { name: "Satelit", exact: true }).click();
   await page.locator('.terrain-view[data-imagery="loaded"]').waitFor();
   // Test-only access to the public Map API through its owning React ref.
   await page.evaluate(() => {
@@ -70,7 +70,7 @@ try {
       }
       fiber = fiber.return;
     }
-    throw new Error("Map ref unavailable");
+    throw new Error("Map ref belum tersedia");
   });
   await page.addStyleTag({
     content:
@@ -333,7 +333,7 @@ try {
       .screenshot({ path: "test-results/lighting/ocean-national.png" });
     assert.ok(
       overviewZooms.length > 0,
-      "National overview uses the reference ocean imagery",
+      "Gambaran nasional uses the reference ocean imagery",
     );
     assert.ok(
       overviewZooms.every((z) => z <= 8),

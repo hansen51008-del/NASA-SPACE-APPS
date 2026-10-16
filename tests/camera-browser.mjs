@@ -35,22 +35,24 @@ try {
     await page.locator(".terrain-view").getAttribute("data-bearing"),
     "20",
   );
-  await page.getByLabel("Terrain camera tilt").fill("45");
+  await page.getByLabel("Kemiringan kamera").fill("45");
   await page
-    .getByRole("button", { name: "Close map settings", exact: true })
+    .getByRole("button", { name: "Tutup pengaturan peta", exact: true })
     .click();
   assert.equal(
-    await page.getByRole("button", { name: "Satellite", exact: true }).count(),
+    await page.getByRole("button", { name: "Satelit", exact: true }).count(),
     0,
   );
-  await page.getByRole("button", { name: "Map settings", exact: true }).click();
-  assert.equal(await page.getByLabel("Terrain camera tilt").inputValue(), "45");
   await page
-    .getByLabel("Area of interest", { exact: true })
+    .getByRole("button", { name: "Pengaturan peta", exact: true })
+    .click();
+  assert.equal(await page.getByLabel("Kemiringan kamera").inputValue(), "45");
+  await page
+    .getByLabel("Wilayah pantauan", { exact: true })
     .selectOption("Jawa Timur");
   await page.locator(".map-canvas").scrollIntoViewIfNeeded();
   await page
-    .getByRole("button", { name: "Enter map fullscreen", exact: true })
+    .getByRole("button", { name: "Buka peta layar penuh", exact: true })
     .click();
   await page.locator(".map-canvas.is-fullscreen").waitFor();
   await page.waitForTimeout(300);
@@ -69,7 +71,7 @@ try {
     ),
     "Native fullscreen entered",
   );
-  await page.getByLabel("Terrain camera tilt").fill("60");
+  await page.getByLabel("Kemiringan kamera").fill("60");
   await page.getByRole("button", { name: "Orbit 360", exact: false }).click();
   const box = await page.locator(".maplibregl-canvas").boundingBox();
   const start = Number(
@@ -92,7 +94,7 @@ try {
       `Continuous orbit ${actual} vs ${expected}`,
     );
     assert.equal(
-      await page.getByLabel("Area of interest", { exact: true }).inputValue(),
+      await page.getByLabel("Wilayah pantauan", { exact: true }).inputValue(),
       "Jawa Timur",
       "Dragging does not select a province",
     );
@@ -105,45 +107,49 @@ try {
     { steps: 10 },
   );
   await page.mouse.up();
-  assert.equal(await page.getByLabel("Terrain camera tilt").inputValue(), "40");
-  await page.getByRole("button", { name: "Face north", exact: true }).click();
+  assert.equal(await page.getByLabel("Kemiringan kamera").inputValue(), "40");
+  await page.getByRole("button", { name: "Hadap utara", exact: true }).click();
   await page.waitForTimeout(150);
   assert.equal(
     await page.locator(".terrain-view").getAttribute("data-bearing"),
     "0",
   );
-  await page.getByRole("button", { name: "Pan", exact: true }).click();
+  await page.getByRole("button", { name: "Geser", exact: true }).click();
   assert.equal(
     await page.locator(".terrain-view").getAttribute("data-orbit"),
     "false",
   );
   await page
-    .getByRole("button", { name: "Exit map fullscreen", exact: true })
+    .getByRole("button", { name: "Keluar dari peta layar penuh", exact: true })
     .click();
   await page
     .locator(".map-canvas.is-fullscreen")
     .waitFor({ state: "detached" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator(".map-canvas").scrollIntoViewIfNeeded();
-  await page.getByRole("button", { name: "Map settings", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Pengaturan peta", exact: true })
+    .click();
   await page
     .locator(".map-canvas")
     .screenshot({ path: "test-results/terrain-controls-mobile-open.png" });
   await page
-    .getByRole("button", { name: "Close map settings", exact: true })
+    .getByRole("button", { name: "Tutup pengaturan peta", exact: true })
     .click();
   await page
     .locator(".map-canvas")
     .screenshot({ path: "test-results/terrain-controls-mobile-closed.png" });
-  await page.getByRole("button", { name: "Map settings", exact: true }).click();
-  assert.equal(await page.getByLabel("Terrain camera tilt").inputValue(), "40");
+  await page
+    .getByRole("button", { name: "Pengaturan peta", exact: true })
+    .click();
+  assert.equal(await page.getByLabel("Kemiringan kamera").inputValue(), "40");
   await page.getByRole("button", { name: "2D", exact: true }).click();
   await page.locator(".map-canvas").evaluate((e) => {
     e.requestFullscreen = () => Promise.reject(new Error("Unavailable"));
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page
-    .getByRole("button", { name: "Enter map fullscreen", exact: true })
+    .getByRole("button", { name: "Buka peta layar penuh", exact: true })
     .click();
   await page.locator(".map-canvas.is-fullscreen").waitFor();
   assert.equal(await page.locator(".province").count(), 38);

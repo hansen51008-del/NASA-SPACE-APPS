@@ -196,16 +196,16 @@ export default function IndonesiaMap({
     >
       <div className="map-topline">
         <span>
-          <span className="status-dot" /> INDONESIAN ARCHIPELAGO{" "}
-          <span className="map-divider">/</span> 38 PROVINCES
+          <span className="status-dot" /> KEPULAUAN INDONESIA{" "}
+          <span className="map-divider">/</span> 38 PROVINSI
         </span>
         <span className="map-coordinate">2.30° S &nbsp; 118.00° E</span>
       </div>
-      <div className="map-view-switch" aria-label="Map appearance">
+      <div className="map-view-switch" aria-label="Tampilan peta">
         <button
           aria-pressed={dimensional}
           onClick={() => setDimensional(true)}
-          title="Real elevation, mountains and valleys"
+          title="Elevasi permukaan, gunung, dan lembah"
         >
           <Box size={13} />
           3D
@@ -228,29 +228,29 @@ export default function IndonesiaMap({
           }}
           title={
             density
-              ? "Switch from activity intensity to province colours"
-              : "Toggle province colours"
+              ? "Beralih dari intensitas aktivitas ke warna provinsi"
+              : "Ubah warna provinsi"
           }
         >
           <Palette size={13} />
-          Province colours{provinceColours && !density && <Check size={12} />}
+          Warna provinsi{provinceColours && !density && <Check size={12} />}
         </button>
         <button
           onClick={toggleFullscreen}
           aria-label={
-            fullscreen ? "Exit map fullscreen" : "Enter map fullscreen"
+            fullscreen
+              ? "Keluar dari peta layar penuh"
+              : "Buka peta layar penuh"
           }
           aria-pressed={fullscreen}
         >
           {fullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-          {fullscreen ? "Exit fullscreen" : "Fullscreen"}
+          {fullscreen ? "Keluar layar penuh" : "Layar penuh"}
         </button>
       </div>
       {dimensional ? (
         <Suspense
-          fallback={
-            <div className="terrain-loading">Loading terrain viewer…</div>
-          }
+          fallback={<div className="terrain-loading">Memuat peta relief…</div>}
         >
           <TerrainMap
             boundaries={boundaries}
@@ -268,7 +268,7 @@ export default function IndonesiaMap({
         <svg
           className="geography"
           viewBox="0 0 1000 440"
-          aria-label="Interactive map of Indonesian provinces"
+          aria-label="Peta interaktif provinsi Indonesia"
           onPointerDown={(e) => {
             if (e.button === 0)
               setDrag({ x: e.clientX, y: e.clientY, px: pan.x, py: pan.y });
@@ -390,19 +390,19 @@ export default function IndonesiaMap({
                 MALAYSIA
               </text>
               <text x="641" y="85" className="water-label">
-                PHILIPPINES
+                FILIPINA
               </text>
               <text x="214" y="326" className="ocean-label">
-                INDIAN OCEAN
+                SAMUDRA HINDIA
               </text>
               <text x="701" y="340" className="ocean-label">
-                BANDA SEA
+                LAUT BANDA
               </text>
               <text x="835" y="100" className="ocean-label">
-                PACIFIC OCEAN
+                SAMUDRA PASIFIK
               </text>
               <text x="442" y="312" className="ocean-label">
-                JAVA SEA
+                LAUT JAWA
               </text>
               <g
                 className="coastal-water"
@@ -452,7 +452,7 @@ export default function IndonesiaMap({
                       }}
                       role="button"
                       tabIndex={0}
-                      aria-label={`Select ${name}`}
+                      aria-label={`Pilih ${name}`}
                       aria-pressed={isSelected}
                       onClick={() => onSelect(name)}
                       onKeyDown={(e) => {
@@ -465,7 +465,7 @@ export default function IndonesiaMap({
                       onPointerLeave={() => setHover(null)}
                     >
                       <title>
-                        {name}: {number(counts.get(name) ?? 0)} observations
+                        {name}: {number(counts.get(name) ?? 0)} observasi
                       </title>
                     </path>
                   );
@@ -502,14 +502,14 @@ export default function IndonesiaMap({
           <strong>{hover}</strong>
           <div className="map-hover-count">
             <b>{number(counts.get(hover) ?? 0)}</b>
-            <span>observations</span>
+            <span>observasi</span>
           </div>
           <div className="map-hover-details">
             <span>
-              High confidence <b>{number(highCounts.get(hover) ?? 0)}</b>
+              Keyakinan tinggi <b>{number(highCounts.get(hover) ?? 0)}</b>
             </span>
             <span>
-              National share{" "}
+              Proporsi nasional{" "}
               <b>
                 {records.length
                   ? (((counts.get(hover) ?? 0) / records.length) * 100).toFixed(
@@ -520,28 +520,30 @@ export default function IndonesiaMap({
               </b>
             </span>
           </div>
-          <span className="hover-prompt">Click to explore this province ↗</span>
+          <span className="hover-prompt">
+            Pilih untuk melihat provinsi ini ↗
+          </span>
         </div>
       )}
       {!dimensional && (
         <div className="map-tools">
           <button
-            aria-label="Zoom in"
+            aria-label="Perbesar"
             onClick={() => setZoom((z) => Math.min(4, z + 0.35))}
           >
             <Plus size={17} />
           </button>
           <button
-            aria-label="Zoom out"
+            aria-label="Perkecil"
             onClick={() => setZoom((z) => Math.max(0.8, z - 0.35))}
           >
             <Minus size={17} />
           </button>
           <span />
-          <button aria-label="Reset map view" onClick={reset}>
+          <button aria-label="Atur ulang peta" onClick={reset}>
             <Crosshair size={17} />
           </button>
-          <button aria-label="Fit Indonesia to view" onClick={reset}>
+          <button aria-label="Tampilkan seluruh Indonesia" onClick={reset}>
             <Maximize2 size={16} />
           </button>
         </div>
@@ -554,19 +556,17 @@ export default function IndonesiaMap({
       )}
       <div className="map-selection">
         <MapPin size={13} />
-        <span>
-          {selected === "Indonesia" ? "Explore all 38 provinces" : selected}
-        </span>
+        <span>{selected === "Indonesia" ? "Lihat 38 provinsi" : selected}</span>
         {selected !== "Indonesia" && (
           <strong className="selected-count">
             {number(counts.get(selected) ?? 0)} <small>obs.</small>
           </strong>
         )}
         {selected === "Indonesia" ? (
-          <span className="selection-hint">CLICK TO SELECT</span>
+          <span className="selection-hint">PILIH PROVINSI</span>
         ) : (
           <button
-            aria-label="Clear province selection"
+            aria-label="Hapus pilihan provinsi"
             onClick={() => onSelect("Indonesia")}
           >
             <X size={13} />
@@ -576,20 +576,20 @@ export default function IndonesiaMap({
       {!dimensional && (
         <div className="map-legend">
           <span className="legend-title">
-            {density ? "PROVINCE ACTIVITY" : "DETECTION CONFIDENCE"}
+            {density ? "AKTIVITAS PROVINSI" : "KEYAKINAN DETEKSI"}
           </span>
           <span className="legend-gradient" />
-          <span>{density ? "Low" : "Low / nominal"}</span>
-          <span>High</span>
+          <span>{density ? "Rendah" : "Rendah / nominal"}</span>
+          <span>Tinggi</span>
           {showMarkers && (
             <small className="symbol-explanation">
-              Stylized detection markers
+              Simbol deteksi ilustratif
             </small>
           )}
         </div>
       )}
       <div className="map-source">
-        Boundaries:{" "}
+        Batas wilayah:{" "}
         <a
           href="https://github.com/denyherianto/indonesia-geojson-topojson-maps-with-38-provinces"
           target="_blank"
@@ -597,10 +597,10 @@ export default function IndonesiaMap({
         >
           Deny Herianto · CC BY 4.0
         </a>{" "}
-        <span>•</span> Demo observations
+        <span>•</span> Observasi satelit · lihat sumber data
       </div>
       {!records.length && (
-        <div className="map-empty">No observations for these filters.</div>
+        <div className="map-empty">Tidak ada observasi untuk filter ini.</div>
       )}
     </div>
   );

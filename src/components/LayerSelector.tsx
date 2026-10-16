@@ -10,24 +10,24 @@ export default function LayerSelector({
   return (
     <section className="layer-section">
       <div className="eyebrow">
-        <Layers size={13} /> OBSERVATION LAYER
+        <Layers size={13} /> LAPISAN OBSERVASI
       </div>
       <div className="segmented">
         {(["MODIS", "VIIRS", "Harmonized"] as Layer[]).map((layer) => (
           <button
-            key={layer}
+            key={layer === "Harmonized" ? "Gabungan" : layer}
             onClick={() => onChange(layer)}
             aria-pressed={value === layer}
             className={value === layer ? "active" : ""}
           >
-            {layer}
+            {layer === "Harmonized" ? "Gabungan" : layer}
           </button>
         ))}
       </div>
       <p className="helper">
         {value === "Harmonized"
-          ? "Two sensors. One consistent activity view."
-          : `${value} detections with native confidence preserved.`}
+          ? "Dua sensor dalam satu tampilan observasi."
+          : `${value} dengan kategori keyakinan asli sensor.`}
       </p>
     </section>
   );

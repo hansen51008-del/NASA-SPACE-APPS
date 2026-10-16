@@ -41,7 +41,7 @@ export function analyze(
 export function peakMonth(counts: number[]) {
   return Math.max(...counts) > 0
     ? MONTHS[counts.indexOf(Math.max(...counts))]
-    : "No activity";
+    : "Tidak ada aktivitas";
 }
 export function regionRanking(records: Hotspot[]) {
   const counts = new Map<string, number>();

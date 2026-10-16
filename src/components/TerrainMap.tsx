@@ -43,21 +43,21 @@ const places = [
     center: [112.922, -8.108] as [number, number],
     zoom: 11.65,
     bearing: -18,
-    detail: "Volcanic slopes · East Java",
+    detail: "Lereng gunung api · Jawa Timur",
   },
   {
     name: "Rinjani",
     center: [116.42, -8.415] as [number, number],
     zoom: 11.1,
     bearing: -25,
-    detail: "Crater lake · Lombok",
+    detail: "Danau kawah · Lombok",
   },
   {
     name: "Pegunungan Papua",
     center: [137.17, -4.08] as [number, number],
     zoom: 10.3,
     bearing: 20,
-    detail: "Highland ridges · Papua",
+    detail: "Punggungan pegunungan · Papua",
   },
 ];
 const dem = {
@@ -89,7 +89,7 @@ export default function TerrainMap(props: Props) {
   const current = useRef(props);
   current.current = props;
   const [ready, setReady] = useState(false);
-  const [status, setStatus] = useState("Loading elevation tiles…");
+  const [status, setStatus] = useState("Memuat data elevasi…");
   const [failed, setFailed] = useState(false);
   const [focus, setFocus] = useState(places[0].name);
   const [relief, setRelief] = useState(1.5);
@@ -140,7 +140,7 @@ export default function TerrainMap(props: Props) {
       padding: 0,
       duration: duration(),
     });
-    setFocus(`${props.selected} / observation ${index + 1}`);
+    setFocus(`${props.selected} / observasi ${index + 1}`);
   };
 
   const provinceData = useMemo(() => {
@@ -181,6 +181,12 @@ export default function TerrainMap(props: Props) {
     let map: GLMap;
     try {
       map = new GLMap({
+        locale: {
+          "NavigationControl.ZoomIn": "Perbesar",
+          "NavigationControl.ZoomOut": "Perkecil",
+          "NavigationControl.ResetBearing": "Hadap utara",
+          "AttributionControl.ToggleAttribution": "Tampilkan atribusi",
+        },
         container: host.current,
         center: places[0].center,
         zoom: places[0].zoom,
@@ -344,7 +350,7 @@ export default function TerrainMap(props: Props) {
     } catch {
       setFailed(true);
       setStatus(
-        "3D is unavailable in this browser. The 2D map is still available.",
+        "Peta 3D tidak tersedia di browser ini. Peta 2D tetap dapat digunakan.",
       );
       return;
     }
@@ -382,7 +388,7 @@ export default function TerrainMap(props: Props) {
     const timer = window.setInterval(() => {
       if (!elevationAvailable && performance.now() - pendingSince > 15000) {
         setStatus(
-          "Elevation tiles are taking longer to load. Check your connection or use 2D.",
+          "Data elevasi belum selesai dimuat. Periksa koneksi atau gunakan peta 2D.",
         );
         setFailed(true);
       }
@@ -402,7 +408,7 @@ export default function TerrainMap(props: Props) {
       ) {
         setFailed(true);
         setStatus(
-          "Some elevation tiles could not load. Check your connection or use 2D.",
+          "Sebagian data elevasi gagal dimuat. Periksa koneksi atau gunakan peta 2D.",
         );
       }
     });
@@ -411,7 +417,7 @@ export default function TerrainMap(props: Props) {
       if (centreHasPaint()) return;
       if (elevationAvailable) pendingSince = performance.now();
       elevationAvailable = false;
-      setStatus("Loading elevation tiles…");
+      setStatus("Memuat data elevasi…");
     });
     map.on("sourcedata", (event) => {
       if (
@@ -451,7 +457,7 @@ export default function TerrainMap(props: Props) {
           map.isSourceLoaded("elevation"))
       ) {
         elevationAvailable = true;
-        setStatus("Elevation loaded");
+        setStatus("Elevasi dimuat");
         setFailed(false);
       }
     });
@@ -785,12 +791,12 @@ export default function TerrainMap(props: Props) {
       data-explore-open={exploreOpen}
       data-surface={surface}
       data-imagery={imageryStatus}
-      data-elevation={status === "Elevation loaded" ? "loaded" : "pending"}
+      data-elevation={status === "Elevasi dimuat" ? "loaded" : "pending"}
     >
       <div
         ref={host}
         className="terrain-gl"
-        aria-label="Interactive 3D terrain map"
+        aria-label="Peta relief 3D interaktif"
       />
       <div className="terrain-atmosphere" aria-hidden="true" />
       <SelectedFireEffects
@@ -799,7 +805,10 @@ export default function TerrainMap(props: Props) {
         selected={props.selected}
         visible={props.showMarkers}
       />
-      <div className="terrain-destinations" aria-label="Mountain viewpoints">
+      <div
+        className="terrain-destinations"
+        aria-label="Pilihan tampilan pegunungan"
+      >
         <button
           className="terrain-explore-toggle"
           aria-expanded={exploreOpen}
@@ -810,7 +819,7 @@ export default function TerrainMap(props: Props) {
               setSettingsOpen(false);
           }}
         >
-          <Mountain size={15} /> Explore relief <ChevronDown size={13} />
+          <Mountain size={15} /> Jelajahi relief <ChevronDown size={13} />
         </button>
         {exploreOpen && (
           <div id="terrain-viewpoints" className="terrain-viewpoints">
@@ -834,16 +843,19 @@ export default function TerrainMap(props: Props) {
                 <small>{place.detail}</small>
               </button>
             ))}
-            <button onClick={nationalView} aria-label="Fit Indonesia to view">
+            <button
+              onClick={nationalView}
+              aria-label="Tampilkan seluruh Indonesia"
+            >
               <Maximize2 size={12} /> Indonesia
             </button>
             {props.showMarkers && fireSites.length > 0 && (
               <button
                 className="terrain-inspect"
                 onClick={inspectFire}
-                aria-label="Inspect selected hotspot"
+                aria-label="Lihat hotspot terpilih"
               >
-                <Crosshair size={13} /> Inspect hotspot
+                <Crosshair size={13} /> Lihat hotspot
               </button>
             )}
           </div>
@@ -852,18 +864,18 @@ export default function TerrainMap(props: Props) {
       <div className="terrain-caption">
         <span className="terrain-eyebrow">
           {surface === "satellite"
-            ? "SATELLITE / 3D TERRAIN"
-            : "ELEVATION / SHADED RELIEF"}
+            ? "SATELIT / RELIEF 3D"
+            : "ELEVASI / RELIEF BERBAYANG"}
         </span>
         <strong>{focus}</strong>
         <span>
           {hover
-            ? `${hover} · click to select`
-            : "Camera view only · activity filters unchanged"}
+            ? `${hover} · pilih untuk melihat`
+            : "Hanya tampilan kamera · filter aktivitas tetap"}
         </span>
         {props.selected !== "Indonesia" && props.showMarkers && (
           <small className="selected-fire-note">
-            Flames mark demo observations · not fire size
+            Simbol observasi · bukan ukuran api
           </small>
         )}
       </div>
@@ -878,20 +890,20 @@ export default function TerrainMap(props: Props) {
           if (matchMedia("(max-width: 650px)").matches) setExploreOpen(false);
         }}
       >
-        <SlidersHorizontal size={15} /> Map settings
+        <SlidersHorizontal size={15} /> Pengaturan peta
       </button>
       {settingsOpen && (
         <div
           id="terrain-settings"
           className="terrain-adjustments"
-          aria-label="Map settings"
+          aria-label="Pengaturan peta"
         >
           <div className="terrain-settings-heading">
             <span>
-              <SlidersHorizontal size={13} /> Map settings
+              <SlidersHorizontal size={13} /> Pengaturan peta
             </span>
             <button
-              aria-label="Close map settings"
+              aria-label="Tutup pengaturan peta"
               onClick={() => {
                 setSettingsOpen(false);
                 requestAnimationFrame(() => settingsTrigger.current?.focus());
@@ -903,34 +915,34 @@ export default function TerrainMap(props: Props) {
           <div
             className="terrain-surface-options"
             role="group"
-            aria-label="Terrain surface"
+            aria-label="Permukaan peta"
           >
             <button
               aria-pressed={surface === "satellite"}
               onClick={() => setSurface("satellite")}
             >
-              Satellite
+              Satelit
             </button>
             <button
               aria-pressed={surface === "relief"}
               onClick={() => setSurface("relief")}
             >
-              Shaded relief
+              Relief berbayang
             </button>
           </div>
           <div
             className="terrain-camera-options"
             role="group"
-            aria-label="Camera drag mode"
+            aria-label="Mode gerakan kamera"
           >
             <button aria-pressed={!orbit} onClick={() => setOrbit(false)}>
-              Pan
+              Geser
             </button>
             <button aria-pressed={orbit} onClick={() => setOrbit(true)}>
-              Orbit 360°
+              Putar 360°
             </button>
             <button
-              aria-label="Face north"
+              aria-label="Hadap utara"
               onClick={() =>
                 mapRef.current?.easeTo({ bearing: 0, duration: duration() })
               }
@@ -941,7 +953,7 @@ export default function TerrainMap(props: Props) {
           <label>
             Relief{" "}
             <select
-              aria-label="Terrain height exaggeration"
+              aria-label="Pengali tinggi relief"
               value={relief}
               onChange={(e) => {
                 const value = Number(e.target.value);
@@ -952,15 +964,15 @@ export default function TerrainMap(props: Props) {
                 });
               }}
             >
-              <option value="1">1× actual scale</option>
-              <option value="1.5">1.5× enhanced</option>
-              <option value="2.5">2.5× enhanced</option>
+              <option value="1">1× skala asli</option>
+              <option value="1.5">1.5× diperbesar</option>
+              <option value="2.5">2.5× diperbesar</option>
             </select>
           </label>
           <label>
-            Tilt{" "}
+            Kemiringan{" "}
             <input
-              aria-label="Terrain camera tilt"
+              aria-label="Kemiringan kamera"
               type="range"
               min="0"
               max="75"
@@ -975,41 +987,43 @@ export default function TerrainMap(props: Props) {
           </label>
           <span className="terrain-gesture">
             {orbit
-              ? "Drag to orbit / tilt · scroll or buttons to zoom"
-              : "Drag to pan · right-drag to orbit · scroll to zoom"}
+              ? "Geser untuk putar / miringkan · gulir atau tombol untuk perbesar"
+              : "Geser untuk pindah · geser kanan untuk putar · gulir untuk perbesar"}
           </span>
           {surface === "relief" && (
             <small className="terrain-imagery-note">
-              Soft terrain colours / satellite imagery optional
+              Warna relief lembut / citra satelit opsional
             </small>
           )}
           {surface === "satellite" && (
             <small className="terrain-imagery-note">
               {imageryStatus === "error" ? (
                 <>
-                  Imagery unavailable.{" "}
+                  Citra tidak tersedia.{" "}
                   <button onClick={() => setSurface("relief")}>
-                    Use shaded relief
+                    Gunakan relief berbayang
                   </button>
                 </>
               ) : imageryStatus === "loading" ? (
-                "Loading surface imagery…"
+                "Memuat citra permukaan…"
               ) : detailLoading ? (
-                "Loading sharper imagery · overview retained"
+                "Memuat citra rinci · tampilan umum tetap tersedia"
               ) : (
-                "Esri overview / Sentinel-2 detail · not live"
+                "Tampilan umum Esri / rincian Sentinel-2 · bukan siaran langsung"
               )}
             </small>
           )}
         </div>
       )}
-      {status !== "Elevation loaded" && (
+      {status !== "Elevasi dimuat" && (
         <div
           className={`terrain-status ${failed ? "has-error" : ""}`}
           role="status"
         >
           {status}
-          {failed && <button onClick={props.onFallback}>Use 2D map</button>}
+          {failed && (
+            <button onClick={props.onFallback}>Gunakan peta 2D</button>
+          )}
         </div>
       )}
     </div>

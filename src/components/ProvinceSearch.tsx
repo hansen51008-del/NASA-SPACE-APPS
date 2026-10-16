@@ -47,14 +47,14 @@ export default function ProvinceSearch({
       <input
         ref={input}
         role="combobox"
-        aria-label="Search provinces"
+        aria-label="Cari provinsi"
         aria-expanded={open}
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={
           open && matches.length ? `${listId}-${active}` : undefined
         }
-        placeholder="Find a province…"
+        placeholder="Cari provinsi…"
         value={query}
         onFocus={() => setOpen(true)}
         onChange={(event) => {
@@ -84,7 +84,7 @@ export default function ProvinceSearch({
       />
       {query && (
         <button
-          aria-label="Clear province search"
+          aria-label="Hapus pencarian provinsi"
           onClick={() => {
             setQuery("");
             setActive(0);
@@ -97,9 +97,9 @@ export default function ProvinceSearch({
       {open && (
         <div className="province-results">
           <div className="search-caption">
-            AREA OF INTEREST <span>OBSERVATIONS</span>
+            WILAYAH PANTAUAN <span>OBSERVASI</span>
           </div>
-          <ul id={listId} role="listbox" aria-label="Matching provinces">
+          <ul id={listId} role="listbox" aria-label="Provinsi yang sesuai">
             {matches.map((name, index) => (
               <li
                 id={`${listId}-${index}`}
@@ -122,10 +122,12 @@ export default function ProvinceSearch({
             ))}
           </ul>
           {!matches.length && (
-            <p className="search-empty">No province matches “{query}”.</p>
+            <p className="search-empty">
+              Tidak ada provinsi yang cocok dengan “{query}”.
+            </p>
           )}
           <div className="search-hint">
-            ↑ ↓ to navigate <span>↵ to select</span>
+            ↑ ↓ untuk berpindah <span>↵ untuk memilih</span>
           </div>
         </div>
       )}

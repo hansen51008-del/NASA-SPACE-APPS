@@ -18,9 +18,14 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import type { Hotspot, Layer, Provinces } from "./types";
+import type { Layer, Provinces } from "./types";
 import { MONTHS, YEARS, number } from "./types";
-import { nasaDataService } from "./services/nasaDataService";
+import { loadObservations } from "./services/observationProvider";
+import type { ObservationDataset } from "./services/observationProvider";
+import { calculateRisk, riskBrief } from "./services/riskService";
+import RiskStatusCard from "./components/RiskStatusCard";
+import RiskBrief from "./components/RiskBrief";
+import EmergencyActionPanel from "./components/EmergencyActionPanel";
 import {
   harmonize,
   largestCell,
@@ -38,15 +43,19 @@ import FireReplay from "./components/FireReplay";
 import HotspotTrend from "./components/HotspotTrend";
 import ActivityCalendar from "./components/ActivityCalendar";
 import YearComparison from "./components/YearComparison";
-import FireBrief, { buildBrief } from "./components/FireBrief";
+import { buildBrief } from "./components/FireBrief";
+import CacheActivity from "./components/CacheActivity";
+import { coveredMonth, inPeriod } from "./services/coveragePeriod";
 import ProvinceSearch from "./components/ProvinceSearch";
 import RegionLeaders from "./components/RegionLeaders";
 type View = "explorer" | "history" | "compare";
 export default function App() {
-  const [data, setData] = useState<{
-    boundaries: Provinces;
-    records: Hotspot[];
-  } | null>(null);
+  const [data, setData] = useState<
+    | ({
+        boundaries: Provinces;
+      } & ObservationDataset)
+    | null
+  >(null);
   const [error, setError] = useState("");
   const [year, setYear] = useState(2025),
     [month, setMonth] = useState<number | null>(null);
@@ -60,7 +69,7 @@ export default function App() {
     [speed, setSpeed] = useState(1);
   const [view, setView] = useState<View>("explorer"),
     [comparisonYear, setComparisonYear] = useState(2024);
-  const [modal, setModal] = useState<"method" | "brief" | null>(null);
+  const [modal, setModal] = useState<"method" | "brief" | "about" | null>(null);
   const [exported, setExported] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const analytics = useRef<HTMLDivElement>(null);
@@ -71,15 +80,20 @@ export default function App() {
         const response = await fetch("/data/indonesia-provinces.geojson", {
           signal: controller.signal,
         });
-        if (!response.ok)
-          throw new Error("Province boundaries could not be loaded.");
+        if (!response.ok) throw new Error("Batas provinsi tidak dapat dimuat.");
         const boundaries: Provinces = await response.json();
-        const records = await nasaDataService.loadRecords(boundaries);
-        if (!controller.signal.aborted) setData({ boundaries, records });
+        const dataset = await loadObservations(boundaries, controller.signal);
+        if (!controller.signal.aborted) {
+          setData({ boundaries, ...dataset });
+          if (dataset.mode === "firms" && dataset.coverage) {
+            setYear(Number(dataset.coverage.end.slice(0, 4)));
+            setMonth(null);
+          }
+        }
       } catch (e) {
         if (!controller.signal.aborted)
           setError(
-            e instanceof Error ? e.message : "Unable to load observations.",
+            e instanceof Error ? e.message : "Observasi tidak dapat dimuat.",
           );
       }
     }
@@ -87,13 +101,13 @@ export default function App() {
     return () => controller.abort();
   }, []);
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || data?.mode === "firms") return;
     const timer = window.setInterval(
       () => setMonth((m) => (m === null || m === 12 ? 1 : m + 1)),
       1300 / speed,
     );
     return () => window.clearInterval(timer);
-  }, [playing, speed]);
+  }, [playing, speed, data?.mode]);
   useEffect(() => {
     if (modal) dialog.current?.showModal();
     else dialog.current?.close();
@@ -103,6 +117,22 @@ export default function App() {
     const timer = setTimeout(() => setExported(false), 2500);
     return () => clearTimeout(timer);
   }, [exported]);
+  const years = data?.years ?? YEARS;
+  const isDemo = data?.mode !== "firms";
+  const layerLabel = layer === "Harmonized" ? "Gabungan" : layer;
+  const coverage = !isDemo ? data?.coverage : undefined;
+  const periodLabel = month
+    ? `${MONTHS[month - 1]} ${year}`
+    : isDemo
+      ? "Seluruh tahun"
+      : "Seluruh cakupan cache";
+  const hasCoverage =
+    isDemo ||
+    (month === null ? !!coverage : coveredMonth(coverage, year, month));
+  const risk = useMemo(
+    () => (data ? calculateRisk(data, region, year, month) : null),
+    [data, region, year, month],
+  );
   const rawAll = useMemo(
     () =>
       data?.records.filter((r) => !highOnly || r.confidence === "high") ?? [],
@@ -120,11 +150,8 @@ export default function App() {
     [allActivity, region],
   );
   const mapRecords = useMemo(
-    () =>
-      allActivity.filter(
-        (r) => r.year === year && (month === null || r.month === month),
-      ),
-    [allActivity, year, month],
+    () => allActivity.filter((r) => inPeriod(r, year, month, coverage)),
+    [allActivity, year, month, coverage],
   );
   const selectedActivity = useMemo(
     () =>
@@ -135,11 +162,10 @@ export default function App() {
     () =>
       rawAll.filter(
         (r) =>
-          r.year === year &&
-          (region === "Indonesia" || r.province === region) &&
-          (month === null || r.month === month),
+          inPeriod(r, year, month, coverage) &&
+          (region === "Indonesia" || r.province === region),
       ),
-    [rawAll, year, region, month],
+    [rawAll, year, region, month, coverage],
   );
   const harmonizedCount = useMemo(
     () => harmonize(selectedRaw).length,
@@ -151,11 +177,11 @@ export default function App() {
   );
   const history = useMemo(
     () =>
-      YEARS.map((y) => ({
+      years.map((y) => ({
         year: y,
         counts: monthlyCounts(regionalActivity, y),
       })),
-    [regionalActivity],
+    [regionalActivity, years],
   );
   const baseline = useMemo(() => {
     const earlier = history.filter((h) => h.year < year);
@@ -166,8 +192,8 @@ export default function App() {
     );
   }, [history, year]);
   const anomaly = useMemo(
-    () => analyze(regionalActivity, year, month, YEARS),
-    [regionalActivity, year, month],
+    () => analyze(regionalActivity, year, month, isDemo ? years : []),
+    [regionalActivity, year, month, years, isDemo],
   );
   const ranking = useMemo(() => regionRanking(mapRecords), [mapRecords]);
   const activeRegions = new Set(selectedActivity.map((r) => r.province)).size;
@@ -176,10 +202,13 @@ export default function App() {
     ? Math.round((high / selectedActivity.length) * 100)
     : 0;
   const changeYear = (y: number) => {
+    if (!years.includes(y)) return;
     setYear(y);
+    if (!isDemo) setMonth(null);
     setPlaying(false);
   };
   const changeMonth = (m: number) => {
+    if (!isDemo && !coveredMonth(coverage, year, m)) return;
     setMonth(m);
     setPlaying(false);
   };
@@ -236,7 +265,7 @@ export default function App() {
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = `BARA_DEMO_${region.replaceAll(" ", "-")}_${year}_${month ?? "annual"}_${layer}.csv`;
+    link.download = `SiagaApi_${isDemo ? "DEMO" : "FIRMS"}_${region.replaceAll(" ", "-")}_${year}_${month ?? "annual"}_${layer}.csv`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setExported(true);
@@ -247,7 +276,7 @@ export default function App() {
         <a
           href="#"
           className="brand"
-          aria-label="BARA home"
+          aria-label="Beranda SiagaApi"
           onClick={(e) => {
             e.preventDefault();
             navigate("explorer");
@@ -257,44 +286,54 @@ export default function App() {
             <Flame size={23} fill="currentColor" />
           </span>
           <span>
-            BARA<span className="brand-period">.</span>
+            SiagaApi<span className="brand-period">.</span>
           </span>
           <span className="brand-subtitle">
-            INDONESIA HOTSPOT
+            KESIAPSIAGAAN
             <br />
-            OBSERVATORY
+            KARHUTLA
           </span>
         </a>
-        <nav aria-label="Main navigation">
+        <nav aria-label="Navigasi utama">
           <button
             className={view === "explorer" ? "active" : ""}
             onClick={() => navigate("explorer")}
           >
-            <Map size={15} /> Explorer
+            <Map size={15} /> Peta & kesiapsiagaan
           </button>
           <button
             className={view === "history" ? "active" : ""}
             onClick={() => navigate("history")}
           >
-            <ActivityIcon size={15} /> Historical insights
+            <ActivityIcon size={15} />{" "}
+            {isDemo ? "Pola historis" : "Ringkasan data"}
           </button>
-          <button
-            className={view === "compare" ? "active" : ""}
-            onClick={() => navigate("compare")}
-          >
-            <Grid2X2 size={15} /> Compare years
-          </button>
+          {isDemo && (
+            <button
+              className={view === "compare" ? "active" : ""}
+              onClick={() => navigate("compare")}
+            >
+              <Grid2X2 size={15} /> Bandingkan tahun
+            </button>
+          )}
         </nav>
         <div className="header-end">
-          <span className="challenge-label">
+          <button
+            className="text-button"
+            aria-haspopup="dialog"
+            onClick={() => setModal("about")}
+          >
+            Tentang SiagaApi
+          </button>
+          <span className="observatory-label">
             <span className="orbit-icon">
               <Satellite size={19} />
             </span>{" "}
-            NASA SPACE APPS <b>2026</b>
+            JOINTS <b>2026</b>
           </span>
           <button
             className="icon-button"
-            aria-label="About the data and methodology"
+            aria-label="Tentang data dan metode"
             onClick={() => setModal("method")}
           >
             <CircleHelp size={19} />
@@ -305,21 +344,26 @@ export default function App() {
         <div className="page-heading">
           <div>
             <div className="breadcrumb">
-              <Globe2 size={12} /> EARTH OBSERVATION <ChevronRight size={11} />{" "}
-              INDONESIA
+              <Globe2 size={12} /> KESIAPSIAGAAN KARHUTLA{" "}
+              <ChevronRight size={11} /> INDONESIA
             </div>
-            <h1>Indonesia hotspot monitor</h1>
-            <p>MODIS and VIIRS observations across 38 provinces.</p>
+            <h1>Kenali risiko. Siapkan langkah.</h1>
+            <p>
+              Pilih wilayah, pahami indikator karhutla, dan siapkan keluarga.
+            </p>
           </div>
           <div className="page-actions">
             <div className="archive-label">
               <Satellite size={16} />
               <span>
-                MODIS + VIIRS <small>2020 — 2025 OBSERVATION ARCHIVE</small>
+                MODIS + VIIRS{" "}
+                <small>
+                  {isDemo ? "ARSIP DEMO 2020–2025" : "CACHE NASA FIRMS"}
+                </small>
               </span>
             </div>
             <span className="demo-badge">
-              <span /> DEMO DATA
+              <span /> {isDemo ? "MODE DEMO" : "DATA FIRMS · CACHE"}
             </span>
             <button
               className="outline-button"
@@ -327,18 +371,18 @@ export default function App() {
               disabled={!data}
             >
               {exported ? <Check size={15} /> : <ArrowDownToLine size={15} />}{" "}
-              {exported ? "Exported" : "Export data"}
+              {exported ? "Diekspor" : "Ekspor CSV"}
             </button>
           </div>
         </div>
         <div className="context-bar">
           <div className="context-title">
             <span className="status-dot" />
-            <strong>Hotspot intelligence</strong>
+            <strong>Pantauan wilayah</strong>
             <span className="vertical-divider" />
             <span>{region}</span>
             <ChevronRight size={12} />
-            <span>{month ? MONTHS[month - 1] : "Full year"}</span>
+            <span>{periodLabel}</span>
           </div>
           <div className="context-controls">
             {month !== null && (
@@ -349,84 +393,181 @@ export default function App() {
                   setPlaying(false);
                 }}
               >
-                Show full year <X size={12} />
+                {isDemo ? "Tampilkan seluruh tahun" : "Seluruh cakupan cache"}{" "}
+                <X size={12} />
               </button>
             )}
-            <YearSelector year={year} onChange={changeYear} />
+            <YearSelector year={year} onChange={changeYear} years={years} />
           </div>
         </div>
         {error ? (
           <div className="load-state" role="alert">
-            <h2>Unable to load the observatory</h2>
+            <h2>Data belum dapat dimuat</h2>
             <p>{error}</p>
             <button
               className="outline-button"
               onClick={() => window.location.reload()}
             >
-              Try again
+              Coba lagi
             </button>
           </div>
         ) : !data ? (
           <div className="load-state">
             <Radio size={28} className="loading-icon" />
-            <h2>Preparing the observatory</h2>
-            <p>
-              Loading province boundaries and reproducible demo observations…
-            </p>
+            <h2>Menyiapkan data wilayah</h2>
+            <p>Memuat batas provinsi dan observasi yang tersedia…</p>
           </div>
         ) : (
           <>
+            <p className="journey-intro">
+              01 Pilih wilayah & periode / 02 Baca indikator risiko / 03 Siapkan
+              tindakan warga
+            </p>
+            <div className="data-provenance" role="status">
+              <strong>{data.notice}</strong>
+              {data.mode === "firms" ? (
+                <p>
+                  Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT. Sinkronisasi:{" "}
+                  {data.updatedAt} / cakupan {data.coverage?.start} sampai{" "}
+                  {data.coverage?.end} (UTC). Cache tidak diperbarui otomatis;
+                  cakupan satelit bukan jaminan semua kebakaran teramati.
+                </p>
+              ) : (
+                <p>
+                  Observasi sintetis untuk demonstrasi. Tidak mencerminkan
+                  kondisi kebakaran saat ini.
+                </p>
+              )}
+            </div>
+            <div className="citizen-filters">
+              <label>
+                Wilayah
+                <select
+                  aria-label="Wilayah pemantauan"
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                >
+                  <option>Indonesia</option>
+                  {data.boundaries.features
+                    .map((f) => f.properties.PROVINSI)
+                    .sort()
+                    .map((name) => (
+                      <option key={name}>{name}</option>
+                    ))}
+                </select>
+              </label>
+              <label>
+                Periode
+                <select
+                  aria-label="Bulan pemantauan"
+                  value={month ?? "all"}
+                  onChange={(e) => {
+                    if (e.target.value === "all") {
+                      setMonth(null);
+                      setPlaying(false);
+                    } else changeMonth(Number(e.target.value));
+                  }}
+                >
+                  <option value="all">
+                    {isDemo ? "Seluruh tahun" : "Seluruh cakupan cache"}
+                  </option>
+                  {MONTHS.map((name, i) => (
+                    <option
+                      key={name}
+                      value={i + 1}
+                      disabled={!isDemo && !coveredMonth(coverage, year, i + 1)}
+                    >
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {!isDemo && (
+              <p className="coverage-explanation">
+                Pilihan bulan dibatasi pada {coverage?.start} sampai{" "}
+                {coverage?.end} (UTC). Bulan lain tidak memiliki cakupan dan
+                dinonaktifkan; ini bukan data satu bulan penuh.
+              </p>
+            )}
+            {risk && (
+              <div className="citizen-grid">
+                <div className="citizen-summary">
+                  <RiskStatusCard risk={risk} region={region} />
+                  <RiskBrief
+                    risk={risk}
+                    region={region}
+                    onExpand={() => setModal("brief")}
+                  />
+                </div>
+                <EmergencyActionPanel
+                  key={`${region}-${year}-${month}-${risk.level}`}
+                  level={risk.level}
+                  region={region}
+                />
+              </div>
+            )}
             <div className="metrics">
               <Metric
                 label={
                   layer === "Harmonized"
-                    ? "Harmonized observations"
-                    : `${layer} detections`
+                    ? "Observasi gabungan"
+                    : `Deteksi ${layer}`
                 }
-                value={number(selectedActivity.length)}
+                value={
+                  hasCoverage
+                    ? number(selectedActivity.length)
+                    : "Belum dapat dinilai"
+                }
                 icon={<Flame size={17} />}
                 sub={
                   layer === "Harmonized"
-                    ? `${number(selectedRaw.length)} source detections`
-                    : "Satellite observations"
+                    ? `${number(selectedRaw.length)} deteksi sumber`
+                    : "Observasi satelit"
                 }
-                detail="Not individual fire incidents"
-                spark={counts}
+                detail="Bukan kejadian kebakaran individual"
+                spark={isDemo ? counts : undefined}
               />
               <Metric
-                label="High confidence"
-                value={number(high)}
+                label="Keyakinan tinggi"
+                value={hasCoverage ? number(high) : "Belum dapat dinilai"}
                 icon={<ShieldCheck size={17} />}
-                sub={`${highPercent}% of selected observations`}
-                detail="Sensor confidence classes"
-                progress={highPercent}
+                sub={`${highPercent}% dari observasi terpilih`}
+                detail="Kategori keyakinan sensor"
+                progress={hasCoverage ? highPercent : undefined}
               />
               <Metric
-                label="Provinces with activity"
-                value={number(activeRegions).padStart(2, "0")}
+                label="Provinsi dengan aktivitas"
+                value={
+                  hasCoverage
+                    ? number(activeRegions).padStart(2, "0")
+                    : "Belum dapat dinilai"
+                }
                 suffix={region === "Indonesia" ? "/ 38" : "/ 1"}
                 icon={<MapPin size={17} />}
                 sub={
-                  region === "Indonesia"
-                    ? "Provinces with detected activity"
-                    : region
+                  region === "Indonesia" ? "Provinsi dengan deteksi" : region
                 }
-                detail="Within the selected period"
+                detail="Dalam periode terpilih"
               />
               <Metric
-                label="Densest grid cell"
-                value={number(largestCell(selectedActivity))}
+                label="Sel grid terpadat"
+                value={
+                  hasCoverage
+                    ? number(largestCell(selectedActivity))
+                    : "Belum dapat dinilai"
+                }
                 suffix="obs."
                 icon={<Grid2X2 size={17} />}
-                sub="Maximum observations in a 0.05° cell"
-                detail="Spatial density · not a fire perimeter"
+                sub="Observasi terbanyak dalam sel 0,05°"
+                detail="Kepadatan spasial · bukan batas kebakaran"
               />
             </div>
             <div className="workspace">
               <section className="map-panel">
                 <div className="map-heading">
                   <h2>
-                    <span className="live-square" /> Activity explorer
+                    <span className="live-square" /> Peta aktivitas
                   </h2>
                   <ProvinceSearch
                     regions={data.boundaries.features
@@ -436,9 +577,12 @@ export default function App() {
                     onSelect={setRegion}
                   />
                   <div>
-                    <span className="subtle-tag">{layer.toUpperCase()}</span>
+                    <span className="subtle-tag">
+                      {layerLabel.toUpperCase()}
+                    </span>
                     <span className="map-hint">
-                      Select a province to explore <ArrowUpRight size={12} />
+                      Pilih provinsi untuk melihat rincian{" "}
+                      <ArrowUpRight size={12} />
                     </span>
                   </div>
                 </div>
@@ -452,18 +596,22 @@ export default function App() {
                   density={density}
                   onDensityChange={setDensity}
                 />
-                <FireReplay
-                  month={month}
-                  setMonth={setMonth}
-                  playing={playing}
-                  setPlaying={setPlaying}
-                  counts={counts}
-                  speed={speed}
-                  setSpeed={setSpeed}
-                  year={year}
-                />
+                {isDemo && (
+                  <FireReplay
+                    month={month}
+                    setMonth={setMonth}
+                    playing={playing}
+                    setPlaying={setPlaying}
+                    counts={counts}
+                    speed={speed}
+                    setSpeed={setSpeed}
+                    year={year}
+                  />
+                )}
               </section>
               <RegionPanel
+                isDemo={isDemo}
+                periodLabel={periodLabel}
                 region={region}
                 regions={data.boundaries.features
                   .map((f) => f.properties.PROVINSI)
@@ -491,7 +639,7 @@ export default function App() {
             <RegionLeaders
               ranking={ranking}
               selected={region}
-              period={`${month ? MONTHS[month - 1] : "Full year"} ${year}`}
+              period={`${periodLabel} ${year}`}
               onSelect={(name) => {
                 setRegion(name);
                 document
@@ -503,25 +651,32 @@ export default function App() {
               <div>
                 <h2>
                   {view === "compare"
-                    ? "Annual comparison"
-                    : "Historical activity"}
+                    ? "Perbandingan tahunan"
+                    : isDemo
+                      ? "Pola historis"
+                      : "Ringkasan cakupan cache"}
                 </h2>
                 <span>
-                  {region} <span className="divider-dot">/</span> {layer}{" "}
-                  <span className="divider-dot">/</span> Full-year analysis
+                  {region} <span className="divider-dot">/</span> {layerLabel}{" "}
+                  <span className="divider-dot">/</span>{" "}
+                  {isDemo
+                    ? "Analisis tahunan demo"
+                    : "Observasi dalam cakupan cache"}
                 </span>
               </div>
-              <button
-                className="text-button"
-                onClick={() =>
-                  navigate(view === "compare" ? "history" : "compare")
-                }
-              >
-                {view === "compare" ? "Historical insights" : "Compare years"}{" "}
-                <ArrowRight size={14} />
-              </button>
+              {isDemo && (
+                <button
+                  className="text-button"
+                  onClick={() =>
+                    navigate(view === "compare" ? "history" : "compare")
+                  }
+                >
+                  {view === "compare" ? "Pola historis" : "Bandingkan tahun"}{" "}
+                  <ArrowRight size={14} />
+                </button>
+              )}
             </div>
-            {view === "compare" && (
+            {view === "compare" && isDemo && (
               <YearComparison
                 records={regionalActivity}
                 year={year}
@@ -530,42 +685,60 @@ export default function App() {
                 region={region}
               />
             )}
+            {!isDemo && (
+              <p className="data-provenance">
+                Arsip FIRMS hanya mencakup rentang sinkronisasi di atas. Grafik
+                berikut menunjukkan jumlah yang tersedia, bukan total
+                bulanan/tahunan lengkap. Baseline, kalender historis, dan
+                perbandingan tahunan belum dapat dihitung dari cache singkat
+                ini.
+              </p>
+            )}
             <div className="analytics-grid">
-              <HotspotTrend
-                counts={counts}
-                baseline={baseline}
-                baselineAvailable={history.some((h) => h.year < year)}
-                year={year}
-                onMonth={changeMonth}
-              />
-              <ActivityCalendar
-                data={history}
-                selectedYear={year}
-                onSelect={(y, m) => {
-                  changeYear(y);
-                  setMonth(m);
-                }}
-              />
-              <FireBrief
-                records={regionalActivity}
-                year={year}
-                region={region}
-                onExpand={() => setModal("brief")}
-              />
+              {isDemo ? (
+                <HotspotTrend
+                  counts={counts}
+                  baseline={baseline}
+                  baselineAvailable={
+                    isDemo && history.some((h) => h.year < year)
+                  }
+                  year={year}
+                  onMonth={changeMonth}
+                />
+              ) : coverage ? (
+                <CacheActivity
+                  records={selectedActivity}
+                  coverage={coverage}
+                  year={year}
+                  month={month}
+                />
+              ) : (
+                <p>Belum dapat dinilai: cakupan tidak tersedia.</p>
+              )}
+              {isDemo && (
+                <ActivityCalendar
+                  data={history}
+                  selectedYear={year}
+                  onSelect={(y, m) => {
+                    changeYear(y);
+                    setMonth(m);
+                  }}
+                />
+              )}
             </div>
-            {view === "history" && (
+            {view === "history" && isDemo && (
               <section className="card historical-detail">
                 <div className="card-heading">
-                  <h3>Critical periods · {year}</h3>
-                  <span className="subtle-tag">MEAN + 2σ</span>
+                  <h3>Periode tidak biasa · {year}</h3>
+                  <span className="subtle-tag">RATA-RATA + 2σ</span>
                 </div>
                 <p className="helper">
-                  Each month compared with the same month in earlier years. At
-                  least three baseline years required.
+                  Setiap bulan dibandingkan dengan bulan yang sama pada tahun
+                  sebelumnya. Diperlukan sedikitnya tiga tahun baseline.
                 </p>
                 <div className="critical-months">
                   {MONTHS.map((name, i) => {
-                    const a = analyze(regionalActivity, year, i + 1, YEARS);
+                    const a = analyze(regionalActivity, year, i + 1, years);
                     return (
                       <button
                         key={name}
@@ -579,10 +752,10 @@ export default function App() {
                         <strong>{number(a.current)}</strong>
                         <small>
                           {!a.enough
-                            ? "No baseline"
+                            ? "Baseline belum tersedia"
                             : a.unusual
-                              ? "Unusual"
-                              : "Typical range"}
+                              ? "Tidak biasa"
+                              : "Rentang biasa"}
                         </small>
                       </button>
                     );
@@ -593,23 +766,26 @@ export default function App() {
             <div className="data-notice">
               <InfoMark />
               <p>
-                <strong>Observations, not incidents.</strong> A hotspot is a
-                satellite detection, not an individual fire. All activity shown
-                is synthetic demo data.
+                <strong>Observasi, bukan kejadian kebakaran.</strong> Deteksi
+                satelit bukan konfirmasi kebakaran individual.{" "}
+                {isDemo
+                  ? "Data sintetis untuk demonstrasi."
+                  : "Observasi NASA FIRMS sesuai cakupan cache."}{" "}
+                Skor bukan prediksi atau peringatan resmi.
               </p>
               <button onClick={() => setModal("method")}>
-                Data & methodology <ArrowUpRight size={13} />
+                Data & metode <ArrowUpRight size={13} />
               </button>
             </div>
           </>
         )}
         <footer>
           <span>
-            <span className="footer-brand">BARA.</span> Indonesia hotspot
-            observatory · Demo dataset
+            <span className="footer-brand">SiagaApi.</span> Kesiapsiagaan
+            karhutla · {isDemo ? "Mode Demo" : "Cache FIRMS"}
           </span>
           <span>
-            NASA SPACE APPS CHALLENGE 2026 <i /> INDONESIA
+            PROTOTYPE JOINTS 2026 <i /> INDONESIA
           </span>
         </footer>
       </main>
@@ -623,74 +799,120 @@ export default function App() {
       >
         <div className="modal-top">
           <span className="eyebrow">
-            BARA / {modal === "method" ? "DATA & METHODOLOGY" : "FIRE BRIEF"}
+            SiagaApi /{" "}
+            {modal === "about"
+              ? "TENTANG SIAGAAPI"
+              : modal === "method"
+                ? "DATA & METODE"
+                : "RINGKASAN AKTIVITAS"}
           </span>
           <button
             autoFocus
             className="icon-button"
-            aria-label="Close dialog"
+            aria-label="Tutup dialog"
             onClick={() => setModal(null)}
           >
             <X size={20} />
           </button>
         </div>
-        {modal === "method" ? (
+        {modal === "about" ? (
           <>
-            <h2>A transparent view of activity.</h2>
+            <h2>Tentang SiagaApi</h2>
             <p className="modal-intro">
-              Hackathon MVP · synthetic observations · no live NASA connection
-            </p>
-            <h3>01 / Source observations</h3>
-            <p>
-              Deterministic demo records cover 38 provinces and 2020–2025. All
-              coordinates are sampled inside the published province polygons.
-              The seasonal patterns and counts are invented for demonstration,
-              and are not NASA measurements. A hotspot detection is not a fire
-              incident; burned area is not calculated.
-            </p>
-            <h3>02 / Harmonization</h3>
-            <p>
-              Observations are sorted in UTC. A MODIS detection and a VIIRS
-              detection in the same province are paired when they are within{" "}
-              <strong>1 km and 60 minutes</strong>. Matching is one-to-one to
-              the nearest available observation. Same-sensor detections remain
-              separate. Each activity observation retains both source IDs; the
-              first observation anchors its location, month, and year.
+              Prototype JOINTS 2026 / kesiapsiagaan warga
             </p>
             <p>
-              This prototype reduces overlapping observations. It does not
-              correct differences in sensor resolution, overpass times, cloud
-              cover, or detection sensitivity, and is not a scientifically
-              validated long-term harmonized product.
-            </p>
-            <h3>03 / Confidence & density</h3>
-            <p>
-              MODIS confidence is grouped as low (&lt;30), nominal (30–79), or
-              high (≥80); VIIRS uses its native low, nominal, and high
-              categories. No percentage is invented for VIIRS. Paired
-              observations use the highest member confidence. The
-              high-confidence filter runs before matching. The densest cell is a
-              fixed 0.05° geographic grid cell, not a physical fire cluster or
-              an equal-area density measure.
+              Kebakaran hutan dan lahan di Indonesia melepaskan emisi karbon.
+              Kerusakan habitat mengancam keanekaragaman hayati. Kabut asap
+              berdampak pada kesehatan dan kehidupan masyarakat.
             </p>
             <p>
-              Overlapping map symbols are consolidated in 0.04° display cells
-              using an actual member location and the highest member confidence.
-              This keeps the annual map readable without changing analytical
-              counts.
+              SiagaApi menghubungkan pemantauan MODIS/VIIRS, indikator risiko
+              yang transparan, dan checklist kesiapsiagaan. Pilih wilayah dan
+              periode untuk memahami aktivitas yang tercatat serta langkah
+              persiapan.
             </p>
-            <h3>04 / Historical anomalies</h3>
             <p>
-              For the selected region, layer, and confidence filter, activity is
-              unusual above the historical mean + 2 population standard
-              deviations. Baselines use only earlier demo years and the same
-              calendar period, with at least three years required. Annual and
-              monthly anomalies are calculated separately. A brief is generated
-              from these calculations, without AI-generated claims.
+              <span className="subtle-tag">
+                SDG 13 / Penanganan perubahan iklim
+              </span>{" "}
+              <span className="subtle-tag">SDG 15 / Ekosistem daratan</span>
             </p>
-            <h3>05 / Boundaries & data integration</h3>
+            <h3>Observasi, bukan kejadian kebakaran</h3>
             <p>
-              The map uses the published{" "}
+              Deteksi satelit bukan konfirmasi kejadian kebakaran. Skor adalah
+              heuristik prototype, bukan prediksi pasti, pengukuran luas
+              terbakar, atau peringatan resmi. Titik aman, rencana evakuasi, dan
+              bantuan hanya simulasi.
+            </p>
+            <p className="helper">
+              Menggunakan data publik NASA FIRMS saat cache tersedia; bukan
+              produk resmi NASA.{" "}
+              {isDemo
+                ? "Saat ini Mode Demo: observasi sintetis."
+                : "Saat ini menggunakan cache observasi FIRMS."}
+            </p>
+          </>
+        ) : modal === "method" ? (
+          <>
+            <h2>Cara membaca observasi dan indikator.</h2>
+            <p className="modal-intro">
+              {isDemo
+                ? "Mode Demo · observasi sintetis"
+                : "Cache NASA FIRMS · bukan koneksi langsung"}
+            </p>
+            <h3>01 / Sumber observasi</h3>
+            <p>
+              Mode Demo memakai observasi sintetis 2020–2025 di 38 provinsi.
+              Mode FIRMS membaca cache MODIS_NRT dan VIIRS_SNPP_NRT yang
+              disinkronkan di server. Provinsi ditentukan melalui
+              point-in-polygon. Badge sumber, waktu sinkronisasi, dan cakupan
+              membedakan kedua mode. Tidak ada pengukuran luas terbakar.
+            </p>
+            <h3>02 / Penggabungan observasi</h3>
+            <p>
+              Observasi diurutkan menurut waktu UTC. Deteksi MODIS dan VIIRS
+              dipasangkan, termasuk lintas provinsi, bila berjarak paling jauh
+              <strong> 1 km dan 60 menit</strong>. Pencocokan satu-ke-satu
+              memilih observasi terdekat yang tersedia. Deteksi sensor yang sama
+              tetap terpisah. Kedua ID sumber dipertahankan; lokasi, provinsi,
+              bulan, dan tahun mengikuti observasi yang lebih awal.
+            </p>
+            <p>
+              Prototype ini mengurangi observasi yang tumpang tindih. Perbedaan
+              resolusi sensor, waktu lintasan, tutupan awan, dan sensitivitas
+              deteksi belum dikoreksi. Hasilnya bukan produk historis gabungan
+              yang telah divalidasi secara ilmiah.
+            </p>
+            <h3>03 / Keyakinan sensor & kepadatan</h3>
+            <p>
+              Keyakinan MODIS dikelompokkan menjadi rendah (&lt;30), nominal
+              (30–79), atau tinggi (≥80). VIIRS memakai kategori rendah,
+              nominal, dan tinggi asli sensor tanpa persentase buatan. Pasangan
+              observasi memakai kategori tertinggi anggotanya. Pada eksplorasi
+              peta, filter keyakinan tinggi diterapkan sebelum pencocokan. Sel
+              terpadat dihitung pada grid geografis 0,05°, bukan kelompok
+              kejadian kebakaran atau ukuran kepadatan dengan luas setara.
+            </p>
+            <p>
+              Simbol peta yang tumpang tindih diringkas dalam sel tampilan 0,04°
+              memakai lokasi salah satu anggota dan kategori keyakinan
+              tertinggi. Tampilan ini tidak mengubah jumlah observasi dalam
+              analisis.
+            </p>
+            <h3>04 / Anomali historis</h3>
+            <p>
+              Pada arsip demo, aktivitas dianggap tidak biasa bila melebihi
+              rata-rata historis + 2 simpangan baku populasi untuk wilayah,
+              lapisan, dan filter terpilih. Baseline memakai periode kalender
+              yang sama pada sedikitnya tiga tahun sebelumnya. Anomali bulanan
+              dan tahunan dihitung terpisah; ringkasan berasal dari perhitungan
+              ini. Cache FIRMS singkat belum mendukung analisis historis
+              tersebut.
+            </p>
+            <h3>05 / Batas wilayah & integrasi data</h3>
+            <p>
+              Peta menggunakan{" "}
               <a
                 href="https://github.com/denyherianto/indonesia-geojson-topojson-maps-with-38-provinces"
                 target="_blank"
@@ -699,7 +921,7 @@ export default function App() {
                 Indonesia 38-province GeoJSON by Deny Herianto{" "}
                 <ExternalLink size={12} />
               </a>
-              , licensed{" "}
+              , dengan lisensi{" "}
               <a
                 href="https://creativecommons.org/licenses/by/4.0/"
                 target="_blank"
@@ -707,20 +929,20 @@ export default function App() {
               >
                 CC BY 4.0
               </a>
-              . The downloaded boundary file is unmodified; ring orientation is
-              normalized for rendering. Current boundaries are used for all demo
-              years, without historical boundary reconstruction.
+              . File batas wilayah tidak diubah; orientasi poligon dinormalisasi
+              untuk tampilan. Batas saat ini dipakai untuk seluruh tahun demo
+              tanpa rekonstruksi perubahan batas historis.
             </p>
             <p>
-              Real observations can replace the demo through the data-service
-              interface. NASA FIRMS credentials and ingestion should run on a
-              server.{" "}
+              Cache diperbarui melalui sinkronisasi di server. Kredensial tidak
+              dikirim ke browser. Cache yang tidak valid memakai fallback demo;
+              cache lebih dari 7 hari tidak menghasilkan status risiko.{" "}
               <a
                 href="https://firms.modaps.eosdis.nasa.gov/content/academy/data_api/firms_api_use.html"
                 target="_blank"
                 rel="noreferrer"
               >
-                NASA FIRMS API documentation <ExternalLink size={12} />
+                Dokumentasi API NASA FIRMS <ExternalLink size={12} />
               </a>
             </p>
           </>
@@ -730,17 +952,23 @@ export default function App() {
               {region} · {year}
             </h2>
             <p className="modal-intro">
-              {layer} ·{" "}
-              {highOnly ? "High confidence only" : "All confidence classes"} ·
-              Full-year analysis · DEMO DATA
+              {layerLabel} ·{" "}
+              {highOnly ? "Hanya keyakinan tinggi" : "Semua kategori keyakinan"}{" "}
+              ·{periodLabel} · {isDemo ? "DEMO SINTETIS" : "CACHE FIRMS"}
             </p>
             <p className="full-brief">
-              {buildBrief(regionalActivity, year, region)}
+              {risk ? riskBrief(risk, region) : "Data belum tersedia."}
+              {isDemo && (
+                <>
+                  <br />
+                  <br />
+                  {buildBrief(regionalActivity, year, region)}
+                </>
+              )}
             </p>
-            <h3>Highest activity across Indonesia</h3>
+            <h3>Observasi terbanyak di Indonesia</h3>
             <p className="helper">
-              {month ? MONTHS[month - 1] : "Full year"} {year} · {layer}{" "}
-              observations
+              {periodLabel} {year} · {layerLabel} observasi
             </p>
             <div className="ranking">
               {ranking.slice(0, 5).map(([name, count], i) => (
@@ -759,14 +987,17 @@ export default function App() {
               ))}
             </div>
             <p className="helper">
-              Computed from synthetic data. Anomalies indicate unusual
-              observation counts, not verified fire severity.
+              {isDemo
+                ? "Dihitung dari data sintetis."
+                : "Dihitung dari cakupan cache FIRMS."}{" "}
+              Indikator bukan konfirmasi tingkat keparahan atau instruksi
+              evakuasi.
             </p>
             <button
               className="outline-button"
               onClick={() => setModal("method")}
             >
-              View calculation methods <ArrowUpRight size={14} />
+              Lihat metode perhitungan <ArrowUpRight size={14} />
             </button>
           </>
         )}

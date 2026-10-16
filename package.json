@@ -1,5 +1,5 @@
 {
-  "name": "bara-hotspot-observatory",
+  "name": "siagaapi",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,7 +10,9 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:browser": "node tests/browser.mjs",
-    "format": "prettier --write src tests package.json tsconfig.json vite.config.ts index.html README.md"
+    "format": "prettier --write src tests package.json tsconfig.json vite.config.ts index.html README.md",
+    "sync:firms": "node scripts/run-sync.mjs",
+    "test:siaga": "node tests/siaga-browser.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",
@@ -30,6 +32,8 @@
     "prettier": "^3.9.8",
     "typescript": "~5.8.3",
     "vite": "^6.3.5",
-    "vitest": "^4.1.11"
-  }
+    "vitest": "^4.1.11",
+    "esbuild": "^0.25.12"
+  },
+  "description": "Prototype kesiapsiagaan karhutla warga untuk JOINTS 2026"
 }

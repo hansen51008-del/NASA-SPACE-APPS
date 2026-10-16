@@ -52,10 +52,10 @@ try {
   await page.locator('.terrain-view[data-ready="true"]').waitFor();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page
-    .getByRole("button", { name: "Province colours", exact: true })
+    .getByRole("button", { name: "Warna provinsi", exact: true })
     .click();
-  await page.getByLabel("Hotspot detections", { exact: true }).uncheck();
-  await page.getByLabel("Province boundaries", { exact: true }).uncheck();
+  await page.getByLabel("Deteksi hotspot", { exact: true }).uncheck();
+  await page.getByLabel("Batas provinsi", { exact: true }).uncheck();
   await page.evaluate(() => {
     const element = document.querySelector(".terrain-gl");
     let fiber =
@@ -74,7 +74,7 @@ try {
       }
       fiber = fiber.return;
     }
-    throw new Error("Map ref unavailable");
+    throw new Error("Map ref belum tersedia");
   });
   await page.addStyleTag({
     content:

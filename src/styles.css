@@ -159,7 +159,7 @@ p {
   align-items: center;
   margin-left: auto;
 }
-.challenge-label {
+.observatory-label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -168,7 +168,7 @@ p {
   white-space: nowrap;
   color: #bcc4b8;
 }
-.challenge-label b {
+.observatory-label b {
   color: #858f82;
   font-weight: 400;
 }
@@ -1598,7 +1598,7 @@ select option {
   .topbar nav {
     gap: 15px;
   }
-  .challenge-label {
+  .observatory-label {
     font-size: 7px;
   }
   .header-end {
@@ -1681,7 +1681,7 @@ select option {
     font-size: 10px;
     gap: 5px;
   }
-  .header-end .challenge-label {
+  .header-end .observatory-label {
     display: none;
   }
   .brand > span:nth-child(2) {

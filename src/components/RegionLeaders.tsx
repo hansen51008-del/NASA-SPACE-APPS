@@ -15,21 +15,21 @@ export default function RegionLeaders({
   return (
     <section
       className="region-leaders"
-      aria-label="Provinces ranked by activity"
+      aria-label="Urutan provinsi berdasarkan observasi"
     >
       <div className="leaders-heading">
         <div>
           <MapPin size={14} />
-          <h3>Where activity concentrates</h3>
+          <h3>Sebaran observasi antarwilayah</h3>
         </div>
-        <span>{period} · Nationwide</span>
+        <span>{period} · Seluruh Indonesia</span>
       </div>
       <div className="leaders-list">
         {ranking.slice(0, 5).map(([name, count], index) => (
           <button
             key={name}
             className={selected === name ? "selected" : ""}
-            aria-label={`Explore ${name}`}
+            aria-label={`Jelajahi ${name}`}
             aria-pressed={selected === name}
             onClick={() => onSelect(name)}
           >
@@ -38,7 +38,7 @@ export default function RegionLeaders({
               <span className="leader-name">{name}</span>
               <div className="leader-stat">
                 <strong>{number(count)}</strong>
-                <span>{((count / total) * 100).toFixed(1)}% of total</span>
+                <span>{((count / total) * 100).toFixed(1)}% dari total</span>
               </div>
               <span className="leader-meter">
                 <i style={{ width: `${(count / ranking[0][1]) * 100}%` }} />
@@ -48,7 +48,7 @@ export default function RegionLeaders({
           </button>
         ))}
         {!ranking.length && (
-          <p className="helper">No observations in the selected period.</p>
+          <p className="helper">Tidak ada observasi pada periode terpilih.</p>
         )}
       </div>
     </section>

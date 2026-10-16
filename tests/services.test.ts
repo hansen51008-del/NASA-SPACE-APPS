@@ -44,11 +44,10 @@ describe("harmonization", () => {
       2,
     );
   });
-  it("does not merge observations beyond distance, time, or province limits", () => {
+  it("does not merge observations beyond distance or time limits", () => {
     for (const overrides of [
       { longitude: 114.0 },
       { date: "2025-09-01T05:00:00.000Z" },
-      { province: "Riau" },
     ]) {
       expect(
         harmonize([
@@ -57,6 +56,29 @@ describe("harmonization", () => {
         ]),
       ).toHaveLength(2);
     }
+  });
+  it("merges across province boundaries and preserves the earlier observation's region and period", () => {
+    const earlier = observation({
+      date: "2025-08-31T23:50:00.000Z",
+      month: 8,
+    });
+    const later = observation({
+      id: "b",
+      source: "VIIRS",
+      province: "Kalimantan Selatan",
+      longitude: 113.903,
+      date: "2025-09-01T00:10:00.000Z",
+    });
+    const result = harmonize([later, earlier]);
+    expect(result).toHaveLength(1);
+    expect(result[0].memberIds).toEqual([earlier.id, later.id]);
+    expect(result[0].sources).toEqual(["MODIS", "VIIRS"]);
+    expect(result[0]).toMatchObject({
+      province: earlier.province,
+      date: earlier.date,
+      year: earlier.year,
+      month: earlier.month,
+    });
   });
   it("matches across the hour boundary and avoids transitive merging", () => {
     const result = harmonize([

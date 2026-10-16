@@ -11,6 +11,8 @@ import { peakMonth } from "../services/anomalyService";
 import type { analyze } from "../services/anomalyService";
 import LayerSelector from "./LayerSelector";
 interface Props {
+  isDemo: boolean;
+  periodLabel: string;
   region: string;
   regions: string[];
   onRegion: (r: string) => void;
@@ -59,36 +61,36 @@ export default function RegionPanel(p: Props) {
       <LayerSelector value={p.layer} onChange={p.setLayer} />
       <section className="panel-section">
         <div className="eyebrow">
-          <SlidersHorizontal size={13} /> MAP DISPLAY
+          <SlidersHorizontal size={13} /> TAMPILAN PETA
         </div>
         <Toggle
-          label="Hotspot detections"
+          label="Deteksi hotspot"
           checked={p.markers}
           onChange={p.setMarkers}
         />
         <Toggle
-          label="Province boundaries"
+          label="Batas provinsi"
           checked={p.borders}
           onChange={p.setBorders}
         />
         <Toggle
-          label="Activity intensity"
+          label="Intensitas aktivitas"
           checked={p.density}
           onChange={p.setDensity}
         />
         <Toggle
-          label="High confidence only"
+          label="Hanya keyakinan tinggi"
           checked={p.highOnly}
           onChange={p.setHighOnly}
         />
       </section>
       <section className="panel-section area-section">
         <div className="eyebrow">
-          <MapPin size={13} /> AREA OF INTEREST
+          <MapPin size={13} /> WILAYAH PANTAUAN
         </div>
         <div className="region-select">
           <select
-            aria-label="Area of interest"
+            aria-label="Wilayah pantauan"
             value={p.region}
             onChange={(e) => p.onRegion(e.target.value)}
           >
@@ -100,14 +102,12 @@ export default function RegionPanel(p: Props) {
           <ChevronDown size={15} />
         </div>
         <div className="region-subtitle">
-          {p.region === "Indonesia" ? "National overview" : "Province overview"}
-          <span>
-            {p.year} · {p.month ? "Selected month" : "Full year"}
-          </span>
+          {p.region === "Indonesia" ? "Gambaran nasional" : "Gambaran provinsi"}
+          <span>{p.periodLabel}</span>
         </div>
         <div className="region-total">
           <strong>{number(p.raw.length)}</strong>
-          <span>detected hotspots</span>
+          <span>hotspot terdeteksi</span>
         </div>
         <div className="sensor-split">
           <div>
@@ -131,42 +131,51 @@ export default function RegionPanel(p: Props) {
         </div>
         <dl className="region-stats">
           <div>
-            <dt>Harmonized observations</dt>
+            <dt>Observasi gabungan</dt>
             <dd>{number(p.activity)}</dd>
           </div>
           <div>
-            <dt>High-confidence detections</dt>
+            <dt>Deteksi berkeyakinan tinggi</dt>
             <dd>
               {number(p.raw.filter((r) => r.confidence === "high").length)}
             </dd>
           </div>
-          <div>
-            <dt>
-              Peak month <span className="muted">(year)</span>
-            </dt>
-            <dd>{peakMonth(p.counts)}</dd>
-          </div>
+          {p.isDemo && (
+            <div>
+              <dt>
+                Bulan puncak <span className="muted">(tahun)</span>
+              </dt>
+              <dd>{peakMonth(p.counts)}</dd>
+            </div>
+          )}
         </dl>
-        <div className={`anomaly-note ${p.anomaly.unusual ? "unusual" : ""}`}>
-          <ArrowUpRight size={16} />
-          <div>
-            <strong>
-              {!p.anomaly.enough
-                ? "Building a baseline"
-                : p.anomaly.unusual
-                  ? "Unusual activity"
-                  : "Within historical range"}
-            </strong>
-            <p>
-              {p.anomaly.change === null
-                ? "No historical comparison available"
-                : `${p.anomaly.change >= 0 ? "+" : ""}${p.anomaly.change.toFixed(1)}% vs. prior-year average`}
-            </p>
+        {p.isDemo ? (
+          <div className={`anomaly-note ${p.anomaly.unusual ? "unusual" : ""}`}>
+            <ArrowUpRight size={16} />
+            <div>
+              <strong>
+                {!p.anomaly.enough
+                  ? "Baseline belum mencukupi"
+                  : p.anomaly.unusual
+                    ? "Aktivitas tidak biasa"
+                    : "Dalam rentang historis"}
+              </strong>
+              <p>
+                {p.anomaly.change === null
+                  ? "Perbandingan historis belum tersedia"
+                  : `${p.anomaly.change >= 0 ? "+" : ""}${p.anomaly.change.toFixed(1)}% dibanding rata-rata tahun sebelumnya`}
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <p className="helper">
+            Cache terbatas. Baseline historis dan perbandingan tahunan belum
+            tersedia.
+          </p>
+        )}
       </section>
       <button className="method-link" onClick={p.onMethod}>
-        <Info size={14} /> How harmonization works <ArrowUpRight size={14} />
+        <Info size={14} /> Cara observasi digabungkan <ArrowUpRight size={14} />
       </button>
     </aside>
   );

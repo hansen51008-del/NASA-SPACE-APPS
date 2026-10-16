@@ -55,8 +55,8 @@ try {
   await page
     .locator(".map-canvas")
     .screenshot({ path: "test-results/terrain-bromo.png" });
-  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
-  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await page.getByRole("button", { name: "Perbesar", exact: true }).click();
+  await page.getByRole("button", { name: "Perbesar", exact: true }).click();
   await page.waitForTimeout(1200);
   await page
     .locator('.terrain-view[data-elevation="loaded"]')
@@ -69,7 +69,7 @@ try {
   assert.match(await page.locator(".terrain-caption").innerText(), /Bromo/);
   const observations = await page.locator(".metric-main").first().innerText();
   await page
-    .getByRole("button", { name: "Shaded relief", exact: true })
+    .getByRole("button", { name: "Relief berbayang", exact: true })
     .click();
   assert.equal(
     await page.locator(".terrain-view").getAttribute("data-surface"),
@@ -79,18 +79,18 @@ try {
   await page
     .locator(".map-canvas")
     .screenshot({ path: "test-results/terrain-relief.png" });
-  await page.getByRole("button", { name: "Satellite", exact: true }).click();
+  await page.getByRole("button", { name: "Satelit", exact: true }).click();
   await page
     .locator('.terrain-view[data-imagery="loaded"]')
     .waitFor({ timeout: 60000 });
   await page
-    .getByRole("button", { name: "Shaded relief", exact: true })
+    .getByRole("button", { name: "Relief berbayang", exact: true })
     .click();
   assert.equal(
     await page.locator(".metric-main").first().innerText(),
     observations,
   );
-  await page.getByLabel("Terrain height exaggeration").selectOption("2.5");
+  await page.getByLabel("Pengali tinggi relief").selectOption("2.5");
   await page.getByRole("button", { name: "Rinjani", exact: true }).click();
   await page.waitForTimeout(1500);
   await page
@@ -100,16 +100,16 @@ try {
     .locator(".map-canvas")
     .screenshot({ path: "test-results/terrain-rinjani.png" });
   await page
-    .getByRole("button", { name: "Province colours", exact: true })
+    .getByRole("button", { name: "Warna provinsi", exact: true })
     .click();
   assert.equal(
     await page
-      .getByRole("button", { name: "Province colours", exact: true })
+      .getByRole("button", { name: "Warna provinsi", exact: true })
       .getAttribute("aria-pressed"),
     "false",
   );
   await page
-    .getByRole("button", { name: "Fit Indonesia to view", exact: true })
+    .getByRole("button", { name: "Tampilkan seluruh Indonesia", exact: true })
     .click();
   await page.waitForTimeout(1500);
   await page
@@ -119,7 +119,7 @@ try {
     .locator(".map-canvas")
     .screenshot({ path: "test-results/terrain-indonesia.png" });
   await page
-    .getByLabel("Area of interest", { exact: true })
+    .getByLabel("Wilayah pantauan", { exact: true })
     .selectOption("Jawa Timur");
   await page.waitForTimeout(1500);
   assert.match(
@@ -164,7 +164,7 @@ try {
   await page.waitForTimeout(200);
   assert.notEqual((await paintedFire()).signature, beforeAnimation.signature);
   await page
-    .getByRole("button", { name: "Inspect selected hotspot", exact: true })
+    .getByRole("button", { name: "Lihat hotspot terpilih", exact: true })
     .click();
   await page.waitForTimeout(1800);
   await page
@@ -173,7 +173,7 @@ try {
   await page.waitForTimeout(2000);
   assert.match(
     await page.locator(".terrain-caption").innerText(),
-    /observation 1/,
+    /observasi 1/,
   );
   await page
     .locator(".map-canvas")
@@ -193,7 +193,7 @@ try {
   );
   const pitchSignatures = [];
   for (const tilt of [0, 30, 60, 75, 0]) {
-    await page.getByLabel("Terrain camera tilt").fill(String(tilt));
+    await page.getByLabel("Kemiringan kamera").fill(String(tilt));
     await page.waitForTimeout(600);
     assert.equal(await flames.first().getAttribute("data-pitch"), String(tilt));
     assert.equal(
@@ -224,7 +224,7 @@ try {
     "Returning to top-down restores the same static projection",
   );
 
-  await page.getByLabel("Terrain camera tilt").fill("60");
+  await page.getByLabel("Kemiringan kamera").fill("60");
   await page.getByRole("button", { name: "Orbit 360", exact: false }).click();
   const mapBox = await page.locator(".maplibregl-canvas").boundingBox();
   const startBearing = Number(
@@ -254,31 +254,31 @@ try {
   }
   assert.match(
     await page.locator(".terrain-caption").innerText(),
-    /observation 1/,
+    /observasi 1/,
     "Orbit drag does not select another province",
   );
-  await page.getByRole("button", { name: "Face north", exact: true }).click();
+  await page.getByRole("button", { name: "Hadap utara", exact: true }).click();
   await page.waitForTimeout(300);
   assert.equal(
     await page.locator(".terrain-view").getAttribute("data-bearing"),
     "0",
   );
-  await page.getByRole("button", { name: "Pan", exact: true }).click();
+  await page.getByRole("button", { name: "Geser", exact: true }).click();
   assert.equal(
     await page.locator(".terrain-view").getAttribute("data-orbit"),
     "false",
   );
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.getByLabel("Hotspot detections", { exact: true }).uncheck();
+  await page.getByLabel("Deteksi hotspot", { exact: true }).uncheck();
   assert.equal(await flames.count(), 0);
-  await page.getByLabel("Hotspot detections", { exact: true }).check();
+  await page.getByLabel("Deteksi hotspot", { exact: true }).check();
   assert.ok((await flames.count()) > 0);
   await page
-    .getByRole("button", { name: "Clear province selection", exact: true })
+    .getByRole("button", { name: "Hapus pilihan provinsi", exact: true })
     .click();
   assert.equal(await flames.count(), 0);
   await page
-    .getByLabel("Area of interest", { exact: true })
+    .getByLabel("Wilayah pantauan", { exact: true })
     .selectOption("Jawa Timur");
   await page.waitForTimeout(1500);
   await page.getByRole("button", { name: "Rinjani", exact: true }).click();
@@ -297,12 +297,12 @@ try {
     .screenshot({ path: "test-results/terrain-mobile.png" });
   await page.getByRole("button", { name: "2D", exact: true }).click();
   assert.equal(await page.locator(".province").count(), 38);
-  // Exercise the fallback used when native fullscreen is unavailable.
+  // Exercise the fallback used when native fullscreen is belum tersedia.
   await page.locator(".map-canvas").evaluate((e) => {
     e.requestFullscreen = () => Promise.reject(new Error("Unavailable"));
   });
   await page
-    .getByRole("button", { name: "Enter map fullscreen", exact: true })
+    .getByRole("button", { name: "Buka peta layar penuh", exact: true })
     .click();
   await page.locator(".map-canvas.is-fullscreen").waitFor();
   await page.keyboard.press("Escape");
@@ -329,13 +329,15 @@ try {
     route.abort(),
   );
   await page.getByRole("button", { name: "3D", exact: true }).click();
-  await page.getByRole("button", { name: "Map settings", exact: true }).click();
-  await page.getByRole("button", { name: "Satellite", exact: true }).click();
   await page
-    .getByRole("button", { name: "Use shaded relief", exact: true })
+    .getByRole("button", { name: "Pengaturan peta", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Satelit", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Gunakan relief berbayang", exact: true })
     .waitFor({ timeout: 30000 });
   await page
-    .getByRole("button", { name: "Use shaded relief", exact: true })
+    .getByRole("button", { name: "Gunakan relief berbayang", exact: true })
     .click();
   assert.equal(
     await page.locator(".terrain-view").getAttribute("data-surface"),
@@ -345,9 +347,11 @@ try {
   await page.route("**/tiles.mapterhorn.com/**", (route) => route.abort());
   await page.getByRole("button", { name: "3D", exact: true }).click();
   await page
-    .getByRole("button", { name: "Use 2D map", exact: true })
+    .getByRole("button", { name: "Gunakan peta 2D", exact: true })
     .waitFor({ timeout: 30000 });
-  await page.getByRole("button", { name: "Use 2D map", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Gunakan peta 2D", exact: true })
+    .click();
   assert.equal(await page.locator(".province").count(), 38);
   assert.deepEqual(errors, []);
   console.log(

@@ -37,13 +37,13 @@ export const MONTHS = [
   "Feb",
   "Mar",
   "Apr",
-  "May",
+  "Mei",
   "Jun",
   "Jul",
-  "Aug",
+  "Agu",
   "Sep",
-  "Oct",
+  "Okt",
   "Nov",
-  "Dec",
+  "Des",
 ];
-export const number = (n: number) => n.toLocaleString("en-US");
+export const number = (n: number) => n.toLocaleString("id-ID");

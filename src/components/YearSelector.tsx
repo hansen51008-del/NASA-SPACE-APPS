@@ -3,20 +3,22 @@ import { YEARS } from "../types";
 export default function YearSelector({
   year,
   onChange,
+  years = YEARS,
 }: {
   year: number;
+  years?: number[];
   onChange: (n: number) => void;
 }) {
   return (
     <label className="year-select">
       <CalendarDays size={16} />
-      <span className="muted">Year</span>
+      <span className="muted">Tahun</span>
       <select
-        aria-label="Observation year"
+        aria-label="Tahun observasi"
         value={year}
         onChange={(e) => onChange(Number(e.target.value))}
       >
-        {YEARS.map((y) => (
+        {years.map((y) => (
           <option key={y}>{y}</option>
         ))}
       </select>

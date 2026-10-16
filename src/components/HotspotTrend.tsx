@@ -23,8 +23,8 @@ export default function HotspotTrend({
   return (
     <section className="card trend-card">
       <div className="card-heading">
-        <h3>Activity over time</h3>
-        <span className="subtle-tag">MONTHLY</span>
+        <h3>Aktivitas dari waktu ke waktu</h3>
+        <span className="subtle-tag">BULANAN</span>
       </div>
       <div className="chart-legend">
         <span>
@@ -33,14 +33,16 @@ export default function HotspotTrend({
         </span>
         <span>
           <i className="dashed-line" />
-          {baselineAvailable ? "Prior-year average" : "No earlier baseline"}
+          {baselineAvailable
+            ? "Rata-rata tahun sebelumnya"
+            : "Baseline belum tersedia"}
         </span>
-        <span className="chart-unit">Observations</span>
+        <span className="chart-unit">Observasi</span>
       </div>
       <svg
         viewBox="0 0 560 190"
         role="group"
-        aria-label={`Monthly activity chart for ${year}`}
+        aria-label={`Grafik aktivitas bulanan ${year}`}
       >
         <defs>
           <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
@@ -110,7 +112,7 @@ export default function HotspotTrend({
             onClick={() => onMonth(i + 1)}
             role="button"
             tabIndex={0}
-            aria-label={`${MONTHS[i]} ${year}: ${number(n)} observations; select month`}
+            aria-label={`${MONTHS[i]} ${year}: ${number(n)} observasi; pilih bulan`}
             onFocus={() => setHover(i)}
             onBlur={() => setHover(null)}
             onKeyDown={(event) => {
@@ -164,7 +166,7 @@ export default function HotspotTrend({
               {number(counts[hover])}
               <tspan fill="#abc4cc" fontSize="9" fontWeight="400">
                 {" "}
-                observations
+                observasi
               </tspan>
             </text>
           </g>
@@ -172,10 +174,10 @@ export default function HotspotTrend({
       </svg>
       <div className="chart-caption">
         {hover !== null
-          ? `${MONTHS[hover]} ${year}: ${number(counts[hover])} observations · baseline ${baselineAvailable ? number(Math.round(baseline[hover])) : "unavailable"}`
+          ? `${MONTHS[hover]} ${year}: ${number(counts[hover])} observasi · baseline ${baselineAvailable ? number(Math.round(baseline[hover])) : "belum tersedia"}`
           : baselineAvailable
-            ? "Select a month to explore its activity on the map."
-            : "No earlier years are available for a historical baseline."}
+            ? "Pilih bulan untuk melihat aktivitasnya di peta."
+            : "Belum ada tahun sebelumnya untuk baseline historis."}
       </div>
     </section>
   );

@@ -18,7 +18,15 @@ export default function RiskBrief({
           <FileText size={17} /> Mengapa status ini?
         </h3>
       </div>
-      <p>{riskBrief(risk, region)}</p>
+      <p>
+        {risk.score === null
+          ? `${region} belum dapat dinilai. ${risk.note}`
+          : `${region}: ${risk.count.toLocaleString("id-ID")} observasi satelit, termasuk ${risk.high.toLocaleString("id-ID")} berkeyakinan tinggi, menjadi dasar indikator risiko.`}
+      </p>
+      <details className="brief-details">
+        <summary>Penjelasan lengkap</summary>
+        <p>{riskBrief(risk, region)}</p>
+      </details>
       <p className="helper">
         Indikator aktivitas satelit, bukan prediksi pasti atau peringatan resmi.
       </p>

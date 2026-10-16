@@ -311,6 +311,26 @@
 .archive-label {
   max-width: 270px;
 }
+.data-provenance summary,
+.brief-details summary,
+.safe-point-demo summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 0;
+  color: #c5d7bd;
+  line-height: 1.6;
+}
+.brief-details {
+  font-size: 13px;
+}
+.emergency-panel > a {
+  min-height: 44px;
+  align-items: center;
+}
+.citizen-grid summary:focus-visible {
+  outline: 2px solid #e6c77c;
+  outline-offset: 3px;
+}
 @media (max-width: 760px) {
   .citizen-grid,
   .citizen-summary {

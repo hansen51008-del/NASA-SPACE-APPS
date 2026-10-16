@@ -43,7 +43,8 @@ try {
   );
   await page.goto(url);
   await page
-    .getByText("Mode Demo — data FIRMS belum dikonfigurasi", { exact: true })
+    .locator(".data-provenance strong")
+    .filter({ hasText: "Mode Demo" })
     .waitFor();
   await page.getByRole("button", { name: "2D", exact: true }).click();
   assert.equal(await page.locator(".province").count(), 38);
@@ -81,10 +82,15 @@ try {
     );
     await page.reload();
     await page.locator(`.risk-${level.toLowerCase()}`).waitFor();
-    assert.match(
-      await page.locator(".data-provenance").first().innerText(),
-      /MODIS_NRT.*VIIRS_SNPP_NRT/,
-    );
+    const sourceDetails = page.locator(".data-provenance details").first();
+    assert.equal(await sourceDetails.getAttribute("open"), null);
+    await sourceDetails.locator("summary").click();
+    assert.match(await sourceDetails.innerText(), /MODIS_NRT.*VIIRS_SNPP_NRT/);
+    await sourceDetails.locator("summary").click();
+    assert.equal(await page.locator(".emergency-checklist input").count(), 3);
+    await page.locator(".risk-status summary").click();
+    await page.locator(".risk-factors").waitFor();
+    await page.locator(".risk-status summary").click();
     assert.equal(await page.getByLabel("Tahun observasi").inputValue(), "2026");
     assert.equal(await page.getByLabel("Bulan pemantauan").inputValue(), "all");
     assert.equal(
@@ -202,7 +208,7 @@ try {
     await page.locator(".cache-activity").waitFor();
     assert.match(
       await page.locator(".data-provenance").first().innerText(),
-      /Data NASA FIRMS/,
+      /Cache NASA FIRMS/,
     );
     assert.equal(await page.getByLabel("Bulan pemantauan").inputValue(), "all");
     await page.getByRole("button", { name: "2D", exact: true }).click();

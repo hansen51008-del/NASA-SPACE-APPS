@@ -285,9 +285,7 @@ export default function App() {
           <span className="brand-icon">
             <Flame size={23} fill="currentColor" />
           </span>
-          <span>
-            SiagaApi
-          </span>
+          <span>SiagaApi</span>
           <span className="brand-subtitle">
             KESIAPSIAGAAN
             <br />
@@ -353,17 +351,8 @@ export default function App() {
             </p>
           </div>
           <div className="page-actions">
-            <div className="archive-label">
-              <Satellite size={16} />
-              <span>
-                MODIS + VIIRS{" "}
-                <small>
-                  {isDemo ? "ARSIP DEMO 2020–2025" : "CACHE NASA FIRMS"}
-                </small>
-              </span>
-            </div>
             <span className="demo-badge">
-              <span /> {isDemo ? "MODE DEMO" : "DATA FIRMS · CACHE"}
+              <span /> {isDemo ? "Mode Demo" : "Cache NASA FIRMS"}
             </span>
             <button
               className="outline-button"
@@ -419,25 +408,31 @@ export default function App() {
           </div>
         ) : (
           <>
-            <p className="journey-intro">
-              01 Pilih wilayah & periode / 02 Baca indikator risiko / 03 Siapkan
-              tindakan warga
-            </p>
             <div className="data-provenance" role="status">
-              <strong>{data.notice}</strong>
-              {data.mode === "firms" ? (
-                <p>
-                  Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT. Sinkronisasi:{" "}
-                  {data.updatedAt} / cakupan {data.coverage?.start} sampai{" "}
-                  {data.coverage?.end} (UTC). Cache tidak diperbarui otomatis;
-                  cakupan satelit bukan jaminan semua kebakaran teramati.
-                </p>
-              ) : (
-                <p>
-                  Observasi sintetis untuk demonstrasi. Tidak mencerminkan
-                  kondisi kebakaran saat ini.
-                </p>
-              )}
+              <strong>{isDemo ? "Mode Demo" : "Cache NASA FIRMS"}</strong>
+              <p>
+                {isDemo
+                  ? "Observasi sintetis, bukan kondisi saat ini."
+                  : `Cakupan ${data.coverage?.start} sampai ${data.coverage?.end} (UTC), bukan pantauan langsung.`}
+              </p>
+              <details>
+                <summary>Sumber dan batas data</summary>
+                <p>{data.notice}</p>
+                {data.mode === "firms" ? (
+                  <p>
+                    Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT.
+                    Sinkronisasi: {data.updatedAt} / cakupan{" "}
+                    {data.coverage?.start} sampai {data.coverage?.end} (UTC).
+                    Cache tidak diperbarui otomatis; cakupan satelit bukan
+                    jaminan semua kebakaran teramati.
+                  </p>
+                ) : (
+                  <p>
+                    Observasi sintetis untuk demonstrasi. Tidak mencerminkan
+                    kondisi kebakaran saat ini.
+                  </p>
+                )}
+              </details>
             </div>
             <div className="citizen-filters">
               <label>
@@ -485,9 +480,8 @@ export default function App() {
             </div>
             {!isDemo && (
               <p className="coverage-explanation">
-                Pilihan bulan dibatasi pada {coverage?.start} sampai{" "}
-                {coverage?.end} (UTC). Bulan lain tidak memiliki cakupan dan
-                dinonaktifkan; ini bukan data satu bulan penuh.
+                Bulan tanpa data tidak dapat dipilih. Cakupan bukan satu bulan
+                penuh.
               </p>
             )}
             {risk && (
@@ -782,7 +776,7 @@ export default function App() {
         <footer>
           <span>
             <span className="footer-brand">SiagaApi</span> Kesiapsiagaan
-            karhutla · {isDemo ? "Mode Demo" : "Cache FIRMS"}
+            karhutla · {isDemo ? "Mode Demo" : "Cache NASA FIRMS"}
           </span>
           <span>
             PROTOTYPE <i /> INDONESIA
@@ -818,9 +812,7 @@ export default function App() {
         {modal === "about" ? (
           <>
             <h2>Tentang SiagaApi</h2>
-            <p className="modal-intro">
-              Prototype kesiapsiagaan warga
-            </p>
+            <p className="modal-intro">Prototype kesiapsiagaan warga</p>
             <p>
               Kebakaran hutan dan lahan di Indonesia melepaskan emisi karbon.
               Kerusakan habitat mengancam keanekaragaman hayati. Kabut asap
@@ -850,7 +842,7 @@ export default function App() {
               produk resmi NASA.{" "}
               {isDemo
                 ? "Saat ini Mode Demo: observasi sintetis."
-                : "Saat ini menggunakan cache observasi FIRMS."}
+                : "Saat ini menggunakan Cache NASA FIRMS."}
             </p>
           </>
         ) : modal === "method" ? (
@@ -907,7 +899,7 @@ export default function App() {
               lapisan, dan filter terpilih. Baseline memakai periode kalender
               yang sama pada sedikitnya tiga tahun sebelumnya. Anomali bulanan
               dan tahunan dihitung terpisah; ringkasan berasal dari perhitungan
-              ini. Cache FIRMS singkat belum mendukung analisis historis
+              ini. Cache NASA FIRMS singkat belum mendukung analisis historis
               tersebut.
             </p>
             <h3>05 / Batas wilayah & integrasi data</h3>

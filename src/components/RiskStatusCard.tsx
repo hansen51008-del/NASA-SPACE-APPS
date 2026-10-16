@@ -47,39 +47,40 @@ export default function RiskStatusCard({
       >
         <i style={{ width: `${risk.score ?? 0}%` }} />
       </div>
-      <dl className="risk-factors">
-        <div>
-          <dt>Observasi hotspot gabungan</dt>
-          <dd>
-            {risk.days
-              ? risk.count.toLocaleString("id-ID")
-              : "Belum dapat dinilai"}
-          </dd>
-        </div>
-        <div>
-          <dt>Keyakinan tinggi</dt>
-          <dd>
-            {risk.days
-              ? risk.high.toLocaleString("id-ID")
-              : "Belum dapat dinilai"}
-          </dd>
-        </div>
-        <div>
-          <dt>Perubahan dari baseline</dt>
-          <dd>
-            {risk.change === null
-              ? "Belum tersedia"
-              : `${risk.change >= 0 ? "+" : ""}${risk.change.toFixed(0)}%`}
-          </dd>
-        </div>
-        <div>
-          <dt>Cuaca</dt>
-          <dd>Belum tersedia · tidak dihitung</dd>
-        </div>
-      </dl>
       <p className="risk-caution">{risk.note}</p>
       <details>
         <summary>Cara membaca skor</summary>
+        <dl className="risk-factors">
+          <div>
+            <dt>Observasi satelit gabungan</dt>
+            <dd>
+              {risk.days
+                ? risk.count.toLocaleString("id-ID")
+                : "Belum dapat dinilai"}
+            </dd>
+          </div>
+          <div>
+            <dt>Keyakinan tinggi</dt>
+            <dd>
+              {risk.days
+                ? risk.high.toLocaleString("id-ID")
+                : "Belum dapat dinilai"}
+            </dd>
+          </div>
+          <div>
+            <dt>Perubahan dari rata-rata sebelumnya</dt>
+            <dd>
+              {risk.change === null
+                ? "Belum tersedia"
+                : `${risk.change >= 0 ? "+" : ""}${risk.change.toFixed(0)}%`}
+            </dd>
+          </div>
+          <div>
+            <dt>Cuaca</dt>
+            <dd>Belum tersedia · tidak dihitung</dd>
+          </div>
+        </dl>
+
         <p>
           Rumus prototype: min(50, observasi/hari × 10) + min(30, keyakinan
           tinggi/hari × 10) + min(20, kenaikan positif % ÷ 5). Pembagi:{" "}

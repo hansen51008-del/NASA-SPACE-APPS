@@ -16,8 +16,7 @@ const steps = {
   Siaga: [
     "Siapkan tas berisi dokumen, obat pribadi, masker, dan air minum.",
     "Pastikan semua anggota keluarga dapat dihubungi.",
-    "Konfirmasi tempat tujuan dan akses yang aman kepada petugas setempat.",
-    "Ikuti arahan evakuasi resmi bila diberikan.",
+    "Konfirmasi tujuan dan akses dengan petugas setempat; ikuti arahan mereka bila diminta berpindah.",
   ],
 };
 
@@ -35,7 +34,7 @@ export default function EmergencyActionPanel({
     <section className="card emergency-panel">
       <div className="card-heading">
         <h2>
-          <ClipboardCheck size={20} /> Langkah warga
+          <ClipboardCheck size={20} /> 3 langkah warga
         </h2>
         <span className="subtle-tag">{level ?? "TETAP WASPADA"}</span>
       </div>
@@ -78,19 +77,22 @@ export default function EmergencyActionPanel({
                 : region}
               .
             </p>
-            <p>
-              Titik A: tempat berkumpul keluarga (contoh fiktif). Titik B:
-              tempat penerimaan warga yang harus dikonfirmasi petugas. Tidak ada
-              alamat atau jalur yang telah diverifikasi.
-            </p>
-            <ol>
-              <li>Sepakati kontak keluarga dan calon tempat berkumpul.</li>
-              <li>Konfirmasi keamanan tujuan serta akses dengan petugas.</li>
-              <li>
-                Ikuti rencana dan arahan resmi; diagram latihan ini bukan rute
-                evakuasi.
-              </li>
-            </ol>
+            <details>
+              <summary>Rincian latihan titik kumpul</summary>
+              <p>
+                Titik A: tempat berkumpul keluarga (contoh fiktif). Titik B:
+                tempat penerimaan warga yang harus dikonfirmasi petugas. Tidak
+                ada alamat atau jalur yang telah diverifikasi.
+              </p>
+              <ol>
+                <li>Sepakati kontak keluarga dan calon tempat berkumpul.</li>
+                <li>Konfirmasi keamanan tujuan serta akses dengan petugas.</li>
+                <li>
+                  Ikuti rencana dan arahan resmi; diagram latihan ini bukan rute
+                  evakuasi.
+                </li>
+              </ol>
+            </details>
           </div>
           <button
             className="outline-button help-simulation"
@@ -116,8 +118,8 @@ export default function EmergencyActionPanel({
         Rujukan kesiapsiagaan BNPB ↗
       </a>
       <p className="helper">
-        Checklist tersimpan hanya selama panel ini dibuka. Jangan menunggu skor
-        aplikasi jika ada bahaya nyata.
+        Daftar centang tersimpan hanya selama panel ini dibuka. Jangan menunggu
+        skor aplikasi jika ada bahaya nyata.
       </p>
     </section>
   );

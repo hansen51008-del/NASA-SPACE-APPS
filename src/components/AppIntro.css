@@ -1,0 +1,109 @@
+.app-content[data-intro="true"] {
+  visibility: hidden;
+}
+.app-content:focus {
+  outline: none;
+}
+.app-intro:focus {
+  outline: none;
+}
+.app-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 32px 24px 120px;
+  background: var(--bg, #24292d);
+  color: #f3efea;
+  animation: intro-exit 180ms ease-in 1220ms both;
+}
+.app-intro-brand {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  animation: intro-arrive 500ms ease-out both;
+}
+.app-intro-mark {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 86px;
+  margin-bottom: 24px;
+  border-radius: 20px 20px 20px 7px;
+  background: #ed9b60;
+  color: #30231c;
+}
+.app-intro h1 {
+  font-family: "DM Sans", sans-serif;
+  font-size: clamp(36px, 6vw, 48px);
+  font-weight: 650;
+  letter-spacing: -1.5px;
+  line-height: 1.15;
+}
+.app-intro p {
+  margin-top: 14px;
+  color: #bec5cb;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.app-intro-rule {
+  width: 32px;
+  height: 2px;
+  margin-top: 28px;
+  background: #ed9b60;
+}
+.app-intro-footer {
+  position: absolute;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  left: 24px;
+  right: 24px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.app-intro-footer > span {
+  font-size: 11px;
+  color: #a4aeb7;
+}
+.app-intro button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #56606a;
+  border-radius: 8px;
+  color: #e9ded3;
+  background: transparent;
+  font-size: 12px;
+}
+.app-intro button:hover {
+  background: #30363d;
+}
+@keyframes intro-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes intro-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-intro,
+  .app-intro-brand {
+    animation: none;
+  }
+}

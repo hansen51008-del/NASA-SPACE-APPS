@@ -65,7 +65,8 @@ export default function EmergencyActionPanel({
       </div>
       {level === "Siaga" && (
         <>
-          <div className="safe-point-demo">
+          <details className="safe-point-demo">
+            <summary>Titik kumpul (simulasi)</summary>
             <strong>
               Simulasi titik aman — perlu verifikasi dengan BPBD/pemerintah
               setempat
@@ -77,23 +78,24 @@ export default function EmergencyActionPanel({
                 : region}
               .
             </p>
-            <details>
-              <summary>Rincian latihan titik kumpul</summary>
-              <p>
-                Titik A: tempat berkumpul keluarga (contoh fiktif). Titik B:
-                tempat penerimaan warga yang harus dikonfirmasi petugas. Tidak
-                ada alamat atau jalur yang telah diverifikasi.
-              </p>
-              <ol>
-                <li>Sepakati kontak keluarga dan calon tempat berkumpul.</li>
-                <li>Konfirmasi keamanan tujuan serta akses dengan petugas.</li>
-                <li>
-                  Ikuti rencana dan arahan resmi; diagram latihan ini bukan rute
-                  evakuasi.
-                </li>
-              </ol>
-            </details>
-          </div>
+
+            <p>
+              Titik A: tempat berkumpul keluarga (contoh fiktif). Titik B:
+              tempat penerimaan warga yang harus dikonfirmasi petugas. Tidak ada
+              alamat atau jalur yang telah diverifikasi.
+            </p>
+            <ol>
+              <li>Sepakati kontak keluarga dan calon tempat berkumpul.</li>
+              <li>Konfirmasi keamanan tujuan serta akses dengan petugas.</li>
+              <li>
+                Ikuti rencana dan arahan resmi; diagram latihan ini bukan rute
+                evakuasi.
+              </li>
+            </ol>
+          </details>
+          <p className="simulation-note">
+            Simulasi saja. Konfirmasi titik kumpul dengan BPBD setempat.
+          </p>
           <button
             className="outline-button help-simulation"
             onClick={() => setRequested(true)}
@@ -109,17 +111,23 @@ export default function EmergencyActionPanel({
           )}
         </>
       )}
-      <a
-        className="text-button"
-        href="https://bnpb.go.id/storage/app/media/Buku%20BNPB/Buku%20Saku%20Bencana%20BNPB.pdf"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Rujukan kesiapsiagaan BNPB ↗
-      </a>
-      <p className="helper">
-        Daftar centang tersimpan hanya selama panel ini dibuka. Jangan menunggu
-        skor aplikasi jika ada bahaya nyata.
+      <details className="citizen-guidance">
+        <summary>Panduan & batas penggunaan</summary>
+        <a
+          className="text-button"
+          href="https://bnpb.go.id/storage/app/media/Buku%20BNPB/Buku%20Saku%20Bencana%20BNPB.pdf"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Rujukan kesiapsiagaan BNPB ↗
+        </a>
+        <p className="helper">
+          Daftar centang tersimpan hanya selama panel ini dibuka. Jangan
+          menunggu skor aplikasi jika ada bahaya nyata.
+        </p>
+      </details>
+      <p className="action-caution">
+        Jangan menunggu skor aplikasi jika ada bahaya nyata.
       </p>
     </section>
   );

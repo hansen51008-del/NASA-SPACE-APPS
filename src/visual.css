@@ -6,13 +6,13 @@
   --muted: #a0b1bd;
   --dim: #8196a4;
   --orange: #ff995f;
-  --mint: #b7ddce;
-  --green: #b7ddce;
+  --mint: #d4d4d4;
+  --green: #d4d4d4;
   color: #edf2f3;
   background: var(--bg);
 }
 body {
-  background: radial-gradient(ellipse at 70% -20%, #34493d44, transparent 50%);
+  background: radial-gradient(ellipse at 70% -20%, #44444444, transparent 50%);
 }
 button:focus-visible,
 a:focus-visible,
@@ -31,7 +31,7 @@ button:hover {
 }
 .brand-icon {
   background: var(--mint);
-  color: #192e26;
+  color: #292929;
   width: 35px;
   height: 39px;
   border-radius: 11px 11px 11px 3px;
@@ -57,13 +57,13 @@ button:hover {
   color: #a3b4bf;
 }
 .topbar nav button:hover {
-  color: #e9f5ef;
+  color: #f2f2f2;
   background: #26363c;
 }
 .topbar nav button.active {
-  color: #c6e9d9;
-  background: #2a3c34;
-  box-shadow: inset 0 0 0 1px #5e7c6440;
+  color: #e0e0e0;
+  background: #383838;
+  box-shadow: inset 0 0 0 1px #74747440;
 }
 .topbar nav button.active:after {
   display: none;
@@ -100,7 +100,7 @@ main {
   margin-bottom: 34px;
 }
 .breadcrumb {
-  color: #adbbb9;
+  color: #b8b8b8;
   margin-bottom: 13px;
 }
 .breadcrumb svg:first-child {
@@ -162,14 +162,14 @@ h1 > span {
 }
 .outline-button {
   background: var(--mint);
-  color: #1b3026;
-  border-color: #b7ddce;
+  color: #2b2b2b;
+  border-color: #d4d4d4;
   border-radius: 7px;
   padding: 11px 15px;
   font-weight: 600;
 }
 .outline-button:hover {
-  background: #d4f2e3;
+  background: #ebebeb;
 }
 .context-title {
   font-size: 12px;
@@ -180,7 +180,7 @@ h1 > span {
 }
 .status-dot {
   background: var(--mint);
-  box-shadow: 0 0 0 4px #b7ddce0c;
+  box-shadow: 0 0 0 4px #d4d4d40c;
 }
 .vertical-divider {
   background: #465a64;
@@ -281,7 +281,7 @@ select option {
 }
 .confidence-ring span {
   background: #1d2c35;
-  color: #c3e3d2;
+  color: #dbdbdb;
   font-size: 9px;
 }
 
@@ -304,12 +304,12 @@ select option {
 .live-square {
   border-color: var(--mint);
   border-radius: 2px;
-  box-shadow: 0 0 0 4px #b7ddce0a;
+  box-shadow: 0 0 0 4px #d4d4d40a;
 }
 .map-heading .subtle-tag {
-  color: #c7e7d8;
-  background: #b7ddce0a;
-  border-color: #6d92714d;
+  color: #dfdfdf;
+  background: #d4d4d40a;
+  border-color: #8888884d;
 }
 .map-hint {
   color: #acc0cc;
@@ -386,12 +386,12 @@ select option {
   stroke: #cde2e8;
 }
 .province.selected {
-  stroke: #b6edd6;
+  stroke: #e0e0e0;
   stroke-width: 1.4;
 }
 .province:focus-visible {
-  stroke: #f0fff8;
-  fill: #4b786d;
+  stroke: #fbfbfb;
+  fill: #6e6e6e;
 }
 .island-label {
   font:
@@ -460,8 +460,8 @@ select option {
 .map-tooltip {
   top: 47px;
   left: 20px;
-  background: #203b3bef;
-  border-color: #8ac3aa;
+  background: #353535ef;
+  border-color: #b5b5b5;
   border-radius: 7px;
   padding: 12px 15px;
 }
@@ -469,7 +469,7 @@ select option {
   font-size: 13px;
 }
 .map-tooltip span {
-  color: #c0d5d2;
+  color: #d0d0d0;
   font-size: 10px;
 }
 .map-selection {
@@ -503,12 +503,12 @@ select option {
   display: grid;
   place-items: center;
   padding: 2px;
-  color: #cee5d8;
+  color: #dfdfdf;
   background: none;
   border-radius: 3px;
 }
 .map-selection button:hover {
-  background: #496e5e;
+  background: #656565;
 }
 .map-empty {
   color: #d3e3ea;
@@ -529,7 +529,7 @@ select option {
   color: #bfced6;
 }
 .eyebrow svg {
-  color: #b1d0c5;
+  color: #c9c9c9;
 }
 .segmented {
   padding: 4px;
@@ -545,12 +545,12 @@ select option {
   border-radius: 4px;
 }
 .segmented button:hover {
-  background: #304f48;
-  color: #e2f4eb;
+  background: #484848;
+  color: #f0f0f0;
 }
 .segmented button.active {
   background: var(--mint);
-  color: #213a2e;
+  color: #343434;
   font-weight: 600;
 }
 .helper {
@@ -586,7 +586,7 @@ select option {
   background: var(--mint);
 }
 .toggle-label input:checked + .switch:after {
-  background: #2e4a3b;
+  background: #434343;
   transform: translateX(13px);
 }
 .toggle-label input:focus-visible + .switch {
@@ -594,14 +594,14 @@ select option {
 }
 .region-select select {
   background: #263d41;
-  border-color: #5b7d77;
-  color: #eef9f5;
+  border-color: #757575;
+  color: #f6f6f6;
   padding: 11px 30px 11px 12px;
   font-size: 13px;
   border-radius: 6px;
 }
 .region-select svg {
-  color: #c0dbce;
+  color: #d4d4d4;
   top: 13px;
 }
 .region-subtitle {
@@ -641,7 +641,7 @@ select option {
   background: #c2b8df;
 }
 .sensor-dot.viirs {
-  background: #a9dbc9;
+  background: #cfcfcf;
 }
 .region-stats {
   font-size: 10px;
@@ -656,9 +656,9 @@ select option {
   color: #e4f0f4;
 }
 .anomaly-note {
-  background: #395d4540;
-  border-color: #61826b;
-  color: #c7e8d3;
+  background: #54545440;
+  border-color: #797979;
+  color: #dfdfdf;
   border-radius: 6px;
   margin-top: 17px;
   padding: 12px;
@@ -671,7 +671,7 @@ select option {
   margin-top: 5px;
   line-height: 1.5;
   opacity: 1;
-  color: #b4d0bd;
+  color: #c9c9c9;
 }
 .anomaly-note.unusual {
   background: #65432055;
@@ -682,12 +682,12 @@ select option {
   color: #e0be9d;
 }
 .method-link {
-  color: #c0dacd;
+  color: #d4d4d4;
   font-size: 10px;
   padding: 16px 20px;
 }
 .method-link:hover {
-  background: #3b5b4326;
+  background: #52525226;
 }
 
 .replay {
@@ -702,11 +702,11 @@ select option {
   font-size: 10px;
 }
 .text-button {
-  color: #c1e2d0;
+  color: #dadada;
   font-size: 11px;
 }
 .text-button:hover {
-  color: #ecfff4;
+  color: #fafafa;
 }
 .replay .text-button {
   color: #b8cdd6;
@@ -722,12 +722,12 @@ select option {
   width: 39px;
   height: 39px;
   background: var(--mint);
-  color: #223a2e;
-  border-color: #d0f1da;
-  box-shadow: 0 0 0 5px #b7ddce08;
+  color: #343434;
+  border-color: #e8e8e8;
+  box-shadow: 0 0 0 5px #d4d4d408;
 }
 .play-button:hover {
-  background: #ddf7e8;
+  background: #f0f0f0;
 }
 .month-track {
   gap: 5px;
@@ -747,15 +747,15 @@ select option {
   border-color: #c69d76;
 }
 .month-button:hover .timeline-bar {
-  background: #aacdba;
-  border-color: #cdebd9;
+  background: #c4c4c4;
+  border-color: #e3e3e3;
 }
 .month-button.active {
-  color: #e3ffed;
+  color: #f8f8f8;
 }
 .month-button.active .timeline-bar {
   background: var(--mint);
-  border-color: #eaffef;
+  border-color: #f9f9f9;
 }
 .month-button.active:after {
   background: var(--mint);
@@ -794,7 +794,7 @@ select option {
   letter-spacing: -0.2px;
 }
 .card-heading h3 svg {
-  color: #b8daca;
+  color: #d2d2d2;
 }
 .card-heading > .subtle-tag {
   color: #b4cbd8;
@@ -823,7 +823,7 @@ select option {
   outline: none;
 }
 .chart-point:focus-visible circle {
-  stroke: #dbfae9;
+  stroke: #f2f2f2;
   stroke-width: 3px;
 }
 .calendar-card > .helper {
@@ -848,7 +848,7 @@ select option {
   border-radius: 3px;
 }
 .calendar-row button:hover {
-  outline-color: #dcf2e7;
+  outline-color: #ededed;
 }
 .calendar-legend {
   color: #b5cddc;
@@ -861,21 +861,21 @@ select option {
 }
 .brief-card {
   background:
-    radial-gradient(ellipse at 100% 0, #425b3e44, transparent 80%), #1b2831;
+    radial-gradient(ellipse at 100% 0, #54545444, transparent 80%), #1b2831;
 }
 .computed-tag {
-  color: #cee7d3;
-  border: 1px solid #69936555;
+  color: #e0e0e0;
+  border: 1px solid #87878755;
   border-radius: 4px;
   padding: 5px 6px;
 }
 .computed-tag:before {
-  background: #c1e7cd;
+  background: #dddddd;
 }
 .brief-insight {
   font-size: 13px;
   line-height: 1.7;
-  color: #ebf2ef;
+  color: #f0f0f0;
   margin-top: 21px;
 }
 .brief-insight p strong {
@@ -889,7 +889,7 @@ select option {
 }
 .brief-button {
   border-color: #50646b;
-  color: #d0eedb;
+  color: #e6e6e6;
   margin-top: 18px;
   padding-top: 14px;
   font-size: 11px;
@@ -903,7 +903,7 @@ select option {
 }
 .comparison-grid select {
   background: #2a4247;
-  border-color: #638977;
+  border-color: #808080;
 }
 .comparison-change {
   border-color: #536e7d;
@@ -931,7 +931,7 @@ select option {
   color: #d2e1e8;
 }
 .data-notice button {
-  color: #c6e3d1;
+  color: #dcdcdc;
   font-size: 10px;
 }
 .info-mark {
@@ -949,7 +949,7 @@ footer > span:last-child {
   font-size: 8px;
 }
 .footer-brand {
-  color: #c9e4d5;
+  color: #dddddd;
   font-size: 15px;
 }
 .modal {
@@ -969,11 +969,11 @@ footer > span:last-child {
   line-height: 1.9;
 }
 .modal h3 {
-  color: #cfead8;
+  color: #e3e3e3;
   font-size: 13px;
 }
 .modal a {
-  color: #d9f2df;
+  color: #ebebeb;
 }
 .modal .full-brief {
   color: #d8e9ee;
@@ -983,10 +983,10 @@ footer > span:last-child {
   border-color: #4b697b;
 }
 .ranking button:hover {
-  background: #8badac12;
+  background: #a6a6a612;
 }
 .ranking button span {
-  color: #b9d0bc;
+  color: #cacaca;
 }
 .load-state {
   background: #1b2e3c;

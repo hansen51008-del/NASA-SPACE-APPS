@@ -309,9 +309,9 @@ export default function IndonesiaMap({
               <stop offset="1" stopColor="#111c24" stopOpacity="0" />
             </radialGradient>
             <linearGradient id="land-fill" x1="0" y1="0" x2=".8" y2="1">
-              <stop stopColor="#91a38a" />
-              <stop offset=".5" stopColor="#738d78" />
-              <stop offset="1" stopColor="#5f796c" />
+              <stop stopColor="#9d9d9d" />
+              <stop offset=".5" stopColor="#868686" />
+              <stop offset="1" stopColor="#737373" />
             </linearGradient>
             {shapes.map(({ gradientId, colour }) => (
               <linearGradient
@@ -323,12 +323,12 @@ export default function IndonesiaMap({
                 y2="1"
               >
                 <stop
-                  stopColor={`color-mix(in srgb, ${colour} 78%, #eff4c9)`}
+                  stopColor={`color-mix(in srgb, ${colour} 78%, #f0f0f0)`}
                 />
                 <stop offset=".45" stopColor={colour} />
                 <stop
                   offset="1"
-                  stopColor={`color-mix(in srgb, ${colour} 80%, #213c37)`}
+                  stopColor={`color-mix(in srgb, ${colour} 80%, #363636)`}
                 />
               </linearGradient>
             ))}
@@ -414,7 +414,7 @@ export default function IndonesiaMap({
                     key={feature.properties.PROVINSI}
                     d={d}
                     fill="none"
-                    stroke="#51b6b1"
+                    stroke="#a0a0a0"
                     strokeWidth="12"
                     opacity=".06"
                     filter="url(#coast-softness)"
@@ -425,7 +425,7 @@ export default function IndonesiaMap({
                     key={feature.properties.PROVINSI}
                     d={d}
                     fill="none"
-                    stroke="#7bcebf"
+                    stroke="#bbbbbb"
                     strokeWidth="4"
                     opacity=".1"
                   />
@@ -442,7 +442,7 @@ export default function IndonesiaMap({
                       className={`province ${isSelected ? "selected" : ""}`}
                       style={{
                         fill: isSelected
-                          ? "#bbd7ac"
+                          ? "#cecece"
                           : density && counts.has(name)
                             ? `color-mix(in srgb, #ef7138 ${15 + ((counts.get(name) ?? 0) / maxCount) * 60}%, #263741)`
                             : provinceColours

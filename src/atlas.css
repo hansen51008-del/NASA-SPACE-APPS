@@ -62,8 +62,8 @@
 .symbol-explanation {
   grid-column: 1/-1;
   font-size: 7px;
-  color: #a2bfbc;
-  border-top: 1px solid #779a9033;
+  color: #b9b9b9;
+  border-top: 1px solid #92929233;
   padding-top: 6px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -89,7 +89,7 @@
   );
 }
 .atlas-map .province {
-  stroke: #294d4a;
+  stroke: #454545;
   stroke-width: 0.7;
   paint-order: fill stroke;
   transition:
@@ -116,12 +116,12 @@
   width: 100%;
 }
 .atlas-map .province:hover {
-  stroke: #e0edc6;
+  stroke: #e7e7e7;
   stroke-width: 1.2;
   filter: brightness(1.15);
 }
 .atlas-map .province.selected {
-  stroke: #f0f9d9;
+  stroke: #f5f5f5;
   stroke-width: 1.6;
 }
 .atlas-map .province:focus-visible {
@@ -130,8 +130,8 @@
   filter: brightness(1.18);
 }
 .atlas-map .island-label {
-  fill: #f4f5dd;
-  stroke: #29413a;
+  fill: #f3f3f3;
+  stroke: #3b3b3b;
   stroke-width: 2.7;
   font-size: 9px;
   letter-spacing: 2.2px;
@@ -161,7 +161,7 @@
   align-items: center;
   gap: 3px;
   padding: 4px;
-  border: 1px solid #5f82835c;
+  border: 1px solid #7b7b7b5c;
   border-radius: 7px;
   background: #142e37df;
 }
@@ -172,24 +172,24 @@
   background: transparent;
   border-radius: 4px;
   padding: 7px 9px;
-  color: #adc9ca;
+  color: #c3c3c3;
   font-size: 10px;
 }
 .map-view-switch button[aria-pressed="true"] {
-  background: #c4d4b7;
-  color: #2a433a;
+  background: #cfcfcf;
+  color: #3d3d3d;
 }
 .map-view-switch button:hover {
-  box-shadow: inset 0 0 0 1px #c4d4b766;
+  box-shadow: inset 0 0 0 1px #cfcfcf66;
 }
 .map-view-switch .province-colour-toggle {
   margin-left: 5px;
-  border-left: 1px solid #66827866;
+  border-left: 1px solid #7b7b7b66;
   padding-left: 11px;
 }
 .map-view-switch .province-colour-toggle[aria-pressed="true"] {
-  color: #dcead7;
-  background: #49614b55;
+  color: #e6e6e6;
+  background: #5a5a5a55;
 }
 .island-wall {
   pointer-events: none;
@@ -202,23 +202,23 @@
   padding: 0 8px;
   margin-left: 3px;
   border-left: 1px solid #65808455;
-  color: #a8c2bb;
+  color: #bcbcbc;
   font-size: 9px;
 }
 .atlas-map .map-tooltip {
   top: 95px;
 }
 .atlas-map .map-tools {
-  background: #193640ed;
-  border-color: #6d9394;
+  background: #292d32ed;
+  border-color: #8b8b8b;
 }
 .atlas-map .map-legend {
-  background: #17353be8;
-  border-color: #668785;
+  background: #292d32e8;
+  border-color: #808080;
 }
 .atlas-map .map-selection {
-  background: #1c3b40e8;
-  border-color: #698f88;
+  background: #292d32e8;
+  border-color: #868686;
 }
 @media (max-width: 640px) {
   .map-view-switch {

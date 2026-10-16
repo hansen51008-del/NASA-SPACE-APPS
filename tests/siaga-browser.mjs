@@ -102,6 +102,7 @@ try {
     await page.locator(".risk-status summary").click();
     await page.locator(".risk-factors").waitFor();
     await page.locator(".risk-status summary").click();
+    await page.locator(".home-context > summary").click();
     assert.equal(await page.getByLabel("Tahun observasi").inputValue(), "2026");
     assert.equal(await page.getByLabel("Bulan pemantauan").inputValue(), "all");
     assert.equal(
@@ -129,6 +130,7 @@ try {
     await page
       .getByLabel("Wilayah pemantauan")
       .selectOption("Kalimantan Tengah");
+    await page.locator(".home-context > summary").click();
     assert.equal(await page.locator(".risk-score strong").innerText(), level);
     if (level === "Aman")
       assert.match(
@@ -145,10 +147,12 @@ try {
         await page.locator(".emergency-panel").innerText(),
         /Tidak ada laporan atau permintaan bantuan yang dikirim/,
       );
+      await page.locator(".safe-point-demo > summary").click();
       assert.match(
         await page.locator(".safe-point-demo").innerText(),
         /Kalimantan Tengah/,
       );
+      await page.locator(".safe-point-demo > summary").click();
       await page.setViewportSize({ width: 390, height: 844 });
       assert.equal(
         await page.evaluate(
@@ -184,7 +188,7 @@ try {
           );
           assert.ok(
             await page
-              .getByLabel("Bulan pemantauan")
+              .locator(".home-context > summary")
               .evaluate((el) => el.getBoundingClientRect().height >= 44),
           );
           await page.screenshot({

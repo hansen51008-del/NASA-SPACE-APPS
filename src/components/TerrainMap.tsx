@@ -256,13 +256,13 @@ export default function TerrainMap(props: Props) {
                   0,
                   "#245873",
                   1,
-                  "#567c4d",
+                  "#717171",
                   400,
-                  "#456d40",
+                  "#616161",
                   1100,
-                  "#64814a",
+                  "#777777",
                   1900,
-                  "#8b9164",
+                  "#8c8c8c",
                   2800,
                   "#91836c",
                   3700,
@@ -331,9 +331,9 @@ export default function TerrainMap(props: Props) {
                 "hillshade-highlight-color": [
                   "rgba(248, 224, 174, 0.72)",
                   "rgba(239, 222, 184, 0.54)",
-                  "rgba(213, 225, 221, 0.22)",
+                  "rgba(222, 222, 222, 0.22)",
                 ],
-                "hillshade-accent-color": "rgba(37, 41, 29, 0.3)",
+                "hillshade-accent-color": "rgba(39, 39, 39, 0.3)",
                 resampling: "linear",
               },
             },
@@ -484,7 +484,7 @@ export default function TerrainMap(props: Props) {
         type: "fill",
         source: "provinces",
         paint: {
-          "fill-color": "#739775",
+          "fill-color": "#8d8d8d",
           "fill-opacity": 0.2,
           "fill-antialias": false,
         },
@@ -495,7 +495,7 @@ export default function TerrainMap(props: Props) {
         source: "province-borders",
         layout: { "line-cap": "round", "line-join": "round" },
         paint: {
-          "line-color": "#c8cfbb",
+          "line-color": "#cccccc",
           "line-width": [
             "interpolate",
             ["linear"],
@@ -659,13 +659,13 @@ export default function TerrainMap(props: Props) {
           ["linear"],
           ["get", "activity"],
           0,
-          "#586e61",
+          "#686868",
           1,
           "#ee743e",
         ]
       : props.provinceColours
         ? ["get", "colour"]
-        : "#739775";
+        : "#8d8d8d";
     map.setPaintProperty("province-tint", "fill-color", colour);
     // A fixed tint avoids brightness shifts as the camera zooms.
     map.setPaintProperty(

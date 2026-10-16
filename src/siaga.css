@@ -1,6 +1,100 @@
+/* Shared charcoal surfaces, based on the map panel; risk colors stay semantic. */
+:root {
+  --bg: #24292d;
+  --panel: #2b3035;
+  --control: #30363d;
+  --surface-hover: #3a424b;
+  --success: #81c99b;
+  --info: #a5c4e4;
+  --line: #49525c;
+  --muted: #b8b8b7;
+  --dim: #92989f;
+  --mint: #e7b184;
+  --green: #e7b184;
+}
+body {
+  background: var(--bg);
+}
+.topbar {
+  background: var(--bg);
+  border-color: var(--line);
+}
+.brand-icon {
+  background: #ed9b60;
+  color: #2d211a;
+}
+.topbar nav button.active {
+  border-bottom-color: #ed9b60;
+  color: #f4e9df;
+}
+.outline-button {
+  background: var(--control);
+  border-color: #5b6068;
+  color: #e9e5df;
+}
+.outline-button:hover {
+  background: var(--surface-hover);
+}
+.toggle-label input:checked + .switch:after {
+  background: #20382a;
+}
+.toggle-label input:checked + .switch {
+  background: var(--success);
+}
+.map-view-switch button[aria-pressed="true"] {
+  background: #e7b184;
+  color: #2d211a;
+}
+.map-view-switch .province-colour-toggle {
+  border-left-color: #627b9a66;
+}
+.map-view-switch .province-colour-toggle[aria-pressed="true"] {
+  background: #3c577b55;
+  color: #dce7f7;
+}
+.map-view-switch button:hover {
+  box-shadow: inset 0 0 0 1px #e7b18466;
+}
+/* The same surface hierarchy applies to analytics, dialogs, and map controls. */
+.card,
+.brief-card,
+.metrics,
+.confidence-ring span,
+.region-leaders,
+.map-heading,
+.replay,
+.region-panel,
+.load-state {
+  background: var(--panel);
+  border-color: var(--line);
+}
+.modal,
+.province-results,
+.terrain-view .terrain-adjustments,
+.terrain-view .terrain-settings-trigger,
+.terrain-view .terrain-destinations button:not([aria-pressed="true"]),
+.atlas-map .map-tools,
+.atlas-map .map-legend,
+.atlas-map .map-selection {
+  background: var(--bg);
+  border-color: var(--line);
+}
+.year-select,
+.region-select select,
+.segmented,
+.province-search,
+.terrain-loading {
+  background: var(--control);
+  border-color: var(--line);
+}
+.modal p,
+.modal .full-brief,
+.load-state p {
+  color: #c7cdd3;
+}
 .journey-intro {
   margin: 0 0 18px;
-  color: #b0bbae;
+  color: #aab4c2;
   font-size: 13px;
   line-height: 1.7;
 }
@@ -56,8 +150,8 @@
   gap: 14px;
   padding: 18px 20px;
   margin-bottom: 18px;
-  background: #1b231e;
-  border: 1px solid #354639;
+  background: var(--panel);
+  border: 1px solid #303c4e;
   border-radius: 12px;
 }
 .citizen-filters label {
@@ -71,14 +165,14 @@
   width: 100%;
   min-width: 0;
   padding: 10px;
-  border: 1px solid #425247;
+  border: 1px solid #3d4b60;
   border-radius: 6px;
-  background: #121a15;
-  color: #eef2eb;
+  background: var(--control);
+  color: #edf1f7;
 }
 .data-provenance {
-  border: 1px solid #4b5039;
-  background: #25271c;
+  border: 1px solid #4d4d4d;
+  background: var(--panel);
   padding: 14px 18px;
   border-radius: 9px;
   margin-bottom: 18px;
@@ -119,7 +213,7 @@
   min-width: 0;
 }
 .risk-status {
-  --risk-color: #9da99f;
+  --risk-color: #a6a6a6;
   border-top: 3px solid var(--risk-color);
 }
 .risk-aman {
@@ -164,7 +258,7 @@
 }
 .risk-meter {
   height: 6px;
-  background: #343e36;
+  background: #344154;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -189,12 +283,12 @@
   text-align: right;
 }
 .risk-factors dt {
-  color: #aab6aa;
+  color: #adb8c8;
 }
 .risk-caution {
   border-left: 2px solid #c5a56a;
   padding: 9px 12px;
-  background: #25291e;
+  background: var(--panel);
   font-size: 12px;
   line-height: 1.7;
 }
@@ -205,7 +299,7 @@
 }
 .risk-status summary {
   cursor: pointer;
-  color: #c5d7bd;
+  color: #d1d0cd;
 }
 .risk-status details p {
   margin-top: 10px;
@@ -231,7 +325,7 @@
   font-size: 13px;
   line-height: 1.6;
   padding: 10px;
-  background: #202822;
+  background: var(--panel);
   border-radius: 6px;
 }
 .emergency-checklist input {
@@ -258,7 +352,7 @@
 }
 .help-simulation {
   background: transparent;
-  border: 1px solid #718579;
+  border: 1px solid #52657e;
   padding: 12px 16px;
   border-radius: 6px;
   margin-bottom: 12px;
@@ -268,10 +362,10 @@
   margin: -6px 0 18px;
   font-size: 13px;
   line-height: 1.6;
-  color: #b8c2b9;
+  color: #bac5d4;
 }
 .safe-status-copy {
-  color: #b6d6bf;
+  color: #bfd1ec;
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 12px;
@@ -301,7 +395,7 @@
   font-size: 11px;
 }
 .cache-bar {
-  background: #303a33;
+  background: #2c394c;
   height: 10px;
   border-radius: 3px;
   overflow: hidden;
@@ -309,10 +403,10 @@
 .cache-bar i {
   display: block;
   height: 100%;
-  background: #a5bba7;
+  background: #8ba9cf;
 }
 .citizen-grid .card {
-  background: #1b231f;
+  background: var(--panel);
   box-shadow: none;
 }
 .citizen-filters select {
@@ -363,7 +457,7 @@
   cursor: pointer;
   min-height: 44px;
   padding: 10px 0;
-  color: #c5d7bd;
+  color: #d1d0cd;
   line-height: 1.6;
 }
 .brief-details {
@@ -546,9 +640,9 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 14px;
-  border: 1px solid #506258;
+  border: 1px solid #4a525c;
   border-radius: 12px;
-  background: #18241ff2;
+  background: var(--bg);
   box-shadow: 0 8px 24px #0004;
   scrollbar-width: thin;
 }
@@ -699,10 +793,10 @@
     justify-content: center;
     min-width: 44px;
     min-height: 44px;
-    border: 1px solid #506258;
+    border: 1px solid #4a525c;
     border-radius: 6px;
-    background: #26372e;
-    color: #eef2eb;
+    background: var(--control);
+    color: #edf1f7;
   }
   .map-bottom-controls {
     position: absolute;
@@ -714,18 +808,18 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    background: #18241f;
+    background: var(--bg);
     z-index: 13;
   }
   .map-bottom-controls button {
     min-height: 44px;
-    border: 1px solid #718579;
+    border: 1px solid #52657e;
     border-radius: 8px;
-    color: #eef2eb;
-    background: #26372e;
+    color: #edf1f7;
+    background: var(--control);
   }
   .map-bottom-controls button[aria-expanded="true"] {
-    background: #455f4e;
+    background: var(--surface-hover);
   }
   .map-layout .terrain-destinations {
     top: 62px;
@@ -780,9 +874,9 @@
   gap: 8px;
   position: relative;
   padding: 0 10px;
-  border: 1px solid #506258;
+  border: 1px solid #4a525c;
   border-radius: 6px;
-  background: #14251f;
+  background: var(--bg);
 }
 .map-location .province-search input {
   flex: 1;
@@ -874,9 +968,9 @@
   position: sticky;
   top: -14px;
   z-index: 2;
-  background: #18241f;
+  background: var(--bg);
   padding-block: 8px;
-  border-bottom: 1px solid #506258;
+  border-bottom: 1px solid #4a525c;
 }
 .map-layers > .floating-heading {
   top: 0;
@@ -908,10 +1002,10 @@
     pointer-events: auto;
     min-height: 44px;
     width: 270px;
-    border: 1px solid #506258;
+    border: 1px solid #4a525c;
     border-radius: 8px;
-    color: #eef2eb;
-    background: #18241ff2;
+    color: #edf1f7;
+    background: var(--bg);
   }
   .map-panel-close {
     display: inline-flex;
@@ -920,21 +1014,21 @@
     min-width: 44px;
     min-height: 44px;
     background: transparent;
-    border: 1px solid #506258;
+    border: 1px solid #4a525c;
     border-radius: 6px;
-    color: #eef2eb;
+    color: #edf1f7;
   }
 }
 /* Compact map workspace: search and actions first, explanations on demand. */
 .map-layout .map-floating {
-  background: #17211cf7;
-  border-color: #63736966;
+  background: var(--bg);
+  border-color: #6a707766;
   box-shadow: 0 12px 40px #050c1740;
   border-radius: 14px;
   scrollbar-width: thin;
 }
 .map-layout .map-floating > .floating-heading {
-  background: #17211c;
+  background: var(--bg);
   border-bottom: 0;
   padding-block: 0;
   margin-bottom: 8px;
@@ -942,16 +1036,16 @@
 .map-layout .floating-heading h2 {
   font-size: 13px;
   font-weight: 600;
-  color: #c0cfc6;
+  color: #d2d1cd;
 }
 .map-layout .map-panel-close {
   border: 0;
-  color: #9eafa4;
+  color: #b0b5bb;
 }
 .map-layout .map-location .province-search {
   margin: 0 0 16px;
-  background: #26382e;
-  border-color: #69857477;
+  background: var(--control);
+  border-color: #737c8777;
   border-radius: 9px;
 }
 .map-location .province-search input {
@@ -965,7 +1059,7 @@
 .map-area-summary > span {
   font-size: 19px;
   font-weight: 650;
-  color: #f1f4ee;
+  color: #f1f4f8;
 }
 .map-area-summary strong {
   font-size: 27px;
@@ -976,7 +1070,7 @@
 .map-area-summary small {
   font-size: 11px;
   font-weight: 400;
-  color: #a7b8ab;
+  color: #afbdcf;
   letter-spacing: 0;
 }
 .map-location .context-title {
@@ -1000,22 +1094,22 @@
 }
 .map-location .citizen-filters label {
   font-size: 11px;
-  color: #b2c1b7;
+  color: #b5c2d4;
   gap: 4px;
 }
 .map-location .citizen-filters select {
-  background: #202d25;
-  border-color: #506155;
+  background: var(--control);
+  border-color: #535d69;
   border-radius: 8px;
   font-size: 12px;
 }
 .map-source-compact {
-  border-top: 1px solid #566a5b66;
+  border-top: 1px solid #50617b66;
   padding-top: 12px;
   margin-top: 14px;
   display: grid;
   gap: 5px;
-  color: #acbbae;
+  color: #b0bed0;
   font-size: 10px;
   line-height: 1.5;
 }
@@ -1023,7 +1117,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #d2ddd2;
+  color: #d4deeb;
   font-size: 11px;
 }
 .source-chip > span {
@@ -1037,7 +1131,7 @@
   cursor: pointer;
   min-height: 44px;
   padding: 12px 0;
-  color: #bacbbf;
+  color: #c0cddd;
   font-size: 12px;
 }
 .map-layout .map-layers .layer-section {
@@ -1050,8 +1144,8 @@
 }
 .map-layout .map-layers .segmented {
   padding: 3px;
-  background: #0f1913;
-  border: 1px solid #52645877;
+  background: var(--bg);
+  border: 1px solid #656b7377;
   border-radius: 9px;
   gap: 2px;
 }
@@ -1060,8 +1154,8 @@
   border-radius: 6px;
 }
 .map-layout .map-layers .segmented button.active {
-  background: #b2c9b2;
-  color: #15251c;
+  background: #e7b184;
+  color: #302319;
 }
 .map-layout .map-layers .panel-section {
   padding: 8px 14px;
@@ -1074,12 +1168,12 @@
 .map-layout .map-layers .method-link {
   font-size: 11px;
   padding: 10px 14px;
-  color: #acbbae;
+  color: #b0bed0;
 }
 .map-layout .map-view-switch {
   border-radius: 10px;
-  background: #17211cf2;
-  border-color: #63736966;
+  background: var(--bg);
+  border-color: #6a707766;
   box-shadow: 0 4px 16px #0002;
 }
 .map-layout .map-view-switch button {
@@ -1136,7 +1230,7 @@
   }
 }
 .map-period-controls {
-  border-top: 1px solid #566a5b55;
+  border-top: 1px solid #50617b55;
 }
 .map-period-controls > summary {
   cursor: pointer;
@@ -1145,12 +1239,12 @@
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #d1ddd1;
+  color: #d4deeb;
 }
 .map-period-controls > summary::after {
   content: "+";
   font-size: 18px;
-  color: #9eafa4;
+  color: #b0b5bb;
 }
 .map-period-controls[open] > summary::after {
   content: "\2212";
@@ -1160,4 +1254,426 @@
 }
 .map-layout .map-source-compact {
   margin-top: 0;
+}
+/* Calm citizen overview: context on demand, one clear action per card. */
+.home-layout {
+  max-width: 1180px;
+  padding-top: 30px;
+}
+.home-layout .breadcrumb {
+  display: none;
+}
+.home-layout .page-heading {
+  margin-bottom: 22px;
+}
+.home-layout .page-heading h1 {
+  font-size: clamp(27px, 3.1vw, 38px);
+  letter-spacing: -1.3px;
+  line-height: 1.15;
+}
+.home-layout .page-heading > div > p {
+  margin-top: 10px;
+  color: #b8b8b7;
+}
+.home-context {
+  margin-bottom: 22px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.home-context > summary {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  color: #e9e7e2;
+  cursor: pointer;
+  font-size: 13px;
+}
+.home-context > summary > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-context > summary > span:last-child {
+  color: #b9bec3;
+  font-size: 12px;
+}
+.home-context[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.home-context > .context-bar {
+  margin: 12px 18px;
+}
+.home-context .citizen-filters {
+  border: 0;
+  margin: 0;
+  background: transparent;
+}
+.home-context .coverage-explanation {
+  margin: 0 18px 16px;
+}
+.home-layout .citizen-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.home-layout .citizen-summary {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+.home-layout .citizen-summary .card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.home-layout .risk-status {
+  padding: 26px 28px 8px;
+}
+.home-layout .risk-status .card-heading {
+  margin-bottom: 14px;
+}
+.home-layout .risk-status .subtle-tag {
+  font-size: 8px;
+  background: transparent;
+  border: 0;
+  color: #b7b2ac;
+}
+.home-layout .risk-region {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #c8c2bb;
+}
+.home-layout .risk-score {
+  margin: 22px 0 18px;
+  align-items: baseline;
+}
+.home-layout .risk-score strong {
+  font-size: clamp(30px, 3.8vw, 48px);
+  font-weight: 600;
+  letter-spacing: -1px;
+}
+.home-layout .risk-score > span {
+  font-size: 34px;
+}
+.home-layout .risk-meter {
+  height: 5px;
+}
+.status-limit {
+  font-size: 12px;
+  color: #c8c3bd;
+  line-height: 1.6;
+  margin-top: 14px;
+}
+.home-layout .risk-status details {
+  margin-top: 2px;
+}
+.home-layout .risk-status summary {
+  font-size: 12px;
+}
+.home-layout .risk-brief {
+  padding: 18px 28px 20px;
+  border-top: 1px solid var(--line) !important;
+}
+.home-layout .risk-brief h3 {
+  font-size: 13px;
+  color: #eee4d9;
+}
+.home-layout .risk-brief p {
+  font-size: 13px;
+  line-height: 1.75;
+  margin: 8px 0;
+  color: #cec7be;
+}
+.home-layout .risk-brief .text-button {
+  min-height: 44px;
+  margin-top: 2px;
+}
+.home-layout .emergency-panel {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+.home-layout .emergency-panel .subtle-tag {
+  display: none;
+}
+.home-layout .emergency-panel > p {
+  font-size: 12px;
+  color: #bec1c5;
+}
+.home-layout .emergency-checklist {
+  margin: 18px 0;
+  gap: 8px;
+  counter-reset: action;
+}
+.home-layout .emergency-checklist label {
+  counter-increment: action;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  background: transparent;
+  border-bottom: 1px solid #555a6166;
+  border-radius: 0;
+}
+.home-layout .emergency-checklist label::before {
+  content: "0" counter(action);
+  flex: 0 0 26px;
+  font-size: 12px;
+  color: #e7b184;
+}
+.home-layout .emergency-checklist input {
+  order: 2;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--success);
+}
+.home-layout .emergency-checklist label > span {
+  flex: 1;
+  font-size: 13px;
+  color: #e9e7e3;
+}
+.home-layout .emergency-checklist label:has(input:checked) > span {
+  color: #b2d5be;
+  text-decoration: line-through;
+}
+.home-layout .emergency-checklist label:has(input:checked) {
+  background: color-mix(in srgb, var(--success) 7%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--success) 40%, var(--line));
+}
+.home-layout .emergency-checklist label:has(input:checked)::before {
+  color: var(--success);
+}
+.home-layout .safe-point-demo {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+}
+.home-layout .safe-point-demo > summary,
+.citizen-guidance > summary {
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 12px;
+  color: #d1d0cd;
+}
+.home-layout .safe-point-demo > strong {
+  font-size: 12px;
+}
+.home-layout .safe-point-demo p,
+.home-layout .safe-point-demo li {
+  font-size: 12px;
+}
+.home-layout .emergency-panel .simulation-note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #c9b38c;
+  margin: 0 0 10px;
+}
+.home-layout .help-simulation {
+  width: 100%;
+  font-size: 12px;
+  border-color: #60656b;
+  text-align: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.home-layout .action-caution {
+  font-size: 11px;
+  color: #bcc0c4;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.citizen-guidance a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.home-layout .home-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 4px 0 22px;
+}
+.home-layout .home-actions button {
+  color: #ffe0c5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  min-height: 88px;
+  border: 1px solid #a76d43;
+  border-radius: 14px;
+  background: #76482e;
+  text-align: left;
+}
+.home-layout .home-actions button:last-child {
+  color: var(--info);
+  background: var(--control);
+  border-color: var(--line);
+}
+.home-layout .home-actions button:last-child strong {
+  color: #edf0f2;
+}
+.home-layout .home-actions button:last-child small {
+  color: #b7c0c8;
+}
+.home-layout .home-actions button > span {
+  flex: 1;
+  display: grid;
+  gap: 7px;
+}
+.home-layout .home-actions strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff1e4;
+}
+.home-layout .home-actions small {
+  font-size: 11px;
+  font-weight: 400;
+  color: #e6c9af;
+}
+.home-layout > .data-provenance {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #3b4047;
+  border-radius: 0;
+  padding: 18px 0 0;
+}
+.home-layout > .data-provenance strong {
+  font-size: 12px;
+  color: #c9c8c5;
+}
+.home-layout > .data-provenance p {
+  font-size: 11px;
+  color: #adafb2;
+}
+.home-layout > .data-notice {
+  margin-top: 12px;
+  padding-block: 12px;
+}
+.home-layout footer {
+  margin-top: 20px;
+}
+/* Color identifies status and interaction; neutral surfaces remain the base. */
+.home-layout .citizen-summary:has(.risk-aman) {
+  --status-accent: #81d5a3;
+}
+.home-layout .citizen-summary:has(.risk-waspada) {
+  --status-accent: #f0be68;
+}
+.home-layout .citizen-summary:has(.risk-siaga) {
+  --status-accent: #ff8b82;
+}
+.home-layout .citizen-summary:has(.risk-aman, .risk-waspada, .risk-siaga) {
+  background: color-mix(in srgb, var(--status-accent) 6%, var(--panel));
+  border-color: color-mix(in srgb, var(--status-accent) 38%, var(--line));
+  box-shadow: inset 3px 0 var(--status-accent);
+}
+.risk-status h2 > svg {
+  color: var(--risk-color);
+}
+.home-layout .risk-brief .text-button {
+  color: var(--info);
+}
+/* Map data stays at the same coordinates; only decorative flames are muted. */
+.map-layout .fire-beacon {
+  display: none;
+}
+.map-layout .ember-point {
+  filter: none;
+}
+.map-layout .atlas-map .island-label {
+  opacity: 0.65;
+}
+.map-layout .map-view-switch {
+  padding: 4px;
+  border: 1px solid #676c7488;
+}
+.map-layout .map-view-switch button {
+  padding-inline: 12px;
+}
+.map-layout .map-floating {
+  box-shadow: 0 10px 30px #0003;
+}
+.map-layout .map-area-summary {
+  padding: 0 0 4px;
+}
+.map-layout .map-area-summary small {
+  display: block;
+  margin-top: 5px;
+}
+@media (min-width: 761px) {
+  .map-layout .map-tools {
+    right: 276px;
+  }
+  .map-layout .terrain-gl .maplibregl-ctrl-top-right {
+    top: auto;
+    right: 262px;
+    bottom: 110px;
+  }
+}
+@media (max-width: 760px) {
+  .home-layout {
+    padding-top: 20px;
+  }
+  .home-layout .page-heading {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .home-layout .page-heading h1 {
+    font-size: 28px;
+    line-height: 1.15;
+    max-width: 280px;
+  }
+  .home-layout .page-actions {
+    margin-top: 0;
+  }
+  .home-context {
+    margin-bottom: 16px;
+  }
+  .home-context > summary {
+    padding: 12px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .home-layout .citizen-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .home-layout .risk-status {
+    padding: 20px 20px 8px;
+  }
+  .home-layout .risk-brief {
+    padding: 14px 20px;
+  }
+  .home-layout .risk-score strong {
+    font-size: 34px;
+  }
+  .home-layout .risk-score > span {
+    font-size: 28px;
+  }
+  .home-layout .risk-score {
+    margin-top: 18px;
+  }
+  .home-layout .emergency-panel {
+    padding: 20px;
+  }
+  .home-layout .home-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .home-layout .home-actions button {
+    min-height: 78px;
+    padding: 16px;
+  }
+  .map-layout .map-view-switch button {
+    padding-inline: 3px;
+  }
 }

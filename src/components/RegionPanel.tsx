@@ -84,7 +84,8 @@ export default function RegionPanel(p: Props) {
           onChange={p.setHighOnly}
         />
       </section>
-      <section className="panel-section area-section">
+      <details className="panel-section area-section">
+        <summary>Rincian wilayah</summary>
         <div className="eyebrow">
           <MapPin size={13} /> WILAYAH PANTAUAN
         </div>
@@ -173,7 +174,7 @@ export default function RegionPanel(p: Props) {
             tersedia.
           </p>
         )}
-      </section>
+      </details>
       <button className="method-link" onClick={p.onMethod}>
         <Info size={14} /> Cara observasi digabungkan <ArrowUpRight size={14} />
       </button>

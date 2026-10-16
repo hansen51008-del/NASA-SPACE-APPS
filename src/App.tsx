@@ -503,7 +503,13 @@ export default function App() {
         </div>
       </header>
       <main
-        className={tab === "map" ? "map-layout" : undefined}
+        className={
+          tab === "map"
+            ? "map-layout"
+            : tab === "home"
+              ? "home-layout"
+              : undefined
+        }
         style={
           { "--app-header-height": `${headerHeight}px` } as React.CSSProperties
         }
@@ -545,7 +551,7 @@ export default function App() {
             )}
           </div>
         </div>
-        {tab !== "map" && contextControls}
+        {tab === "data" && contextControls}
         {error ? (
           <div className="load-state" role="alert">
             <h2>Data belum dapat dimuat</h2>
@@ -565,7 +571,21 @@ export default function App() {
           </div>
         ) : (
           <>
-            {tab !== "map" && locationControls}
+            {tab === "data" && locationControls}
+            {tab === "home" && (
+              <details className="home-context">
+                <summary>
+                  <span>
+                    <MapPin size={16} /> {region}
+                  </span>
+                  <span>
+                    {periodLabel} <ChevronRight size={16} />
+                  </span>
+                </summary>
+                {contextControls}
+                {locationControls}
+              </details>
+            )}
             <section
               id="panel-home"
               role="tabpanel"
@@ -593,15 +613,27 @@ export default function App() {
               <div className="home-actions">
                 <button
                   className="outline-button"
+                  aria-label="Buka Peta aktivitas"
                   onClick={() => navigate("map")}
                 >
-                  Buka Peta aktivitas <ArrowRight size={16} />
+                  <Map size={22} />
+                  <span>
+                    <strong>Buka Peta aktivitas</strong>
+                    <small>Jelajahi observasi di wilayahmu</small>
+                  </span>
+                  <ArrowRight size={18} />
                 </button>
                 <button
                   className="outline-button"
+                  aria-label="Buka Data & analitik"
                   onClick={() => navigate("data")}
                 >
-                  Buka Data & analitik <ArrowRight size={16} />
+                  <ActivityIcon size={22} />
+                  <span>
+                    <strong>Buka Data & analitik</strong>
+                    <small>Lihat pola dan rincian observasi</small>
+                  </span>
+                  <ArrowRight size={18} />
                 </button>
               </div>
             </section>
@@ -637,7 +669,9 @@ export default function App() {
                   <div className="map-area-summary">
                     <span>{region}</span>
                     <strong>
-                      {hasCoverage ? number(selectedActivity.length) : "?"}
+                      {hasCoverage
+                        ? number(selectedActivity.length)
+                        : "Belum dapat dinilai"}
                       <small> observasi satelit</small>
                     </strong>
                   </div>

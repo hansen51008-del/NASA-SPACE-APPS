@@ -47,9 +47,13 @@ export default function RiskStatusCard({
       >
         <i style={{ width: `${risk.score ?? 0}%` }} />
       </div>
-      <p className="risk-caution">{risk.note}</p>
+      {risk.score === null && <p className="risk-caution">{risk.note}</p>}
+      <p className="status-limit">
+        Indikator awal, bukan status keselamatan resmi.
+      </p>
       <details>
         <summary>Cara membaca skor</summary>
+        {risk.score !== null && <p className="risk-caution">{risk.note}</p>}
         <dl className="risk-factors">
           <div>
             <dt>Observasi satelit gabungan</dt>

@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Flame,
   Globe2,
+  Home,
   Grid2X2,
   Map,
   MapPin,
@@ -48,7 +49,13 @@ import CacheActivity from "./components/CacheActivity";
 import { coveredMonth, inPeriod } from "./services/coveragePeriod";
 import ProvinceSearch from "./components/ProvinceSearch";
 import RegionLeaders from "./components/RegionLeaders";
-type View = "explorer" | "history" | "compare";
+type View = "history" | "compare";
+type Tab = "home" | "map" | "data";
+const tabs = [
+  { id: "home", label: "Beranda", icon: Home },
+  { id: "map", label: "Peta aktivitas", icon: Map },
+  { id: "data", label: "Data & analitik", icon: ActivityIcon },
+] as const;
 export default function App() {
   const [data, setData] = useState<
     | ({
@@ -67,12 +74,13 @@ export default function App() {
     [highOnly, setHighOnly] = useState(false);
   const [playing, setPlaying] = useState(false),
     [speed, setSpeed] = useState(1);
-  const [view, setView] = useState<View>("explorer"),
+  const [view, setView] = useState<View>("history"),
     [comparisonYear, setComparisonYear] = useState(2024);
   const [modal, setModal] = useState<"method" | "brief" | "about" | null>(null);
   const [exported, setExported] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
-  const analytics = useRef<HTMLDivElement>(null);
+  const [tab, setTab] = useState<Tab>("home");
+  const [mapVisited, setMapVisited] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
@@ -212,18 +220,15 @@ export default function App() {
     setMonth(m);
     setPlaying(false);
   };
-  function navigate(next: View) {
-    setView(next);
-    if (next !== "explorer")
-      setTimeout(
-        () =>
-          analytics.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          }),
-        50,
-      );
-    else window.scrollTo({ top: 0, behavior: "smooth" });
+  function navigate(next: Tab) {
+    setTab(next);
+    if (next === "map") setMapVisited(true);
+    setPlaying(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
+    requestAnimationFrame(() => {
+      document.getElementById(`tab-${next}`)?.focus({ preventScroll: true });
+      window.dispatchEvent(new Event("resize"));
+    });
   }
   function exportData() {
     const csvValue = (value: unknown) =>
@@ -279,7 +284,7 @@ export default function App() {
           aria-label="Beranda SiagaApi"
           onClick={(e) => {
             e.preventDefault();
-            navigate("explorer");
+            navigate("home");
           }}
         >
           <span className="brand-icon">
@@ -293,27 +298,42 @@ export default function App() {
           </span>
         </a>
         <nav aria-label="Navigasi utama">
-          <button
-            className={view === "explorer" ? "active" : ""}
-            onClick={() => navigate("explorer")}
+          <div
+            role="tablist"
+            aria-label="Bagian SiagaApi"
+            className="main-tabs"
           >
-            <Map size={15} /> Peta & kesiapsiagaan
-          </button>
-          <button
-            className={view === "history" ? "active" : ""}
-            onClick={() => navigate("history")}
-          >
-            <ActivityIcon size={15} />{" "}
-            {isDemo ? "Pola historis" : "Ringkasan data"}
-          </button>
-          {isDemo && (
-            <button
-              className={view === "compare" ? "active" : ""}
-              onClick={() => navigate("compare")}
-            >
-              <Grid2X2 size={15} /> Bandingkan tahun
-            </button>
-          )}
+            {tabs.map(({ id, label, icon: Icon }, index) => (
+              <button
+                key={id}
+                id={`tab-${id}`}
+                role="tab"
+                aria-selected={tab === id}
+                aria-controls={`panel-${id}`}
+                tabIndex={tab === id ? 0 : -1}
+                className={tab === id ? "active" : ""}
+                onClick={() => navigate(id)}
+                onKeyDown={(event) => {
+                  const next =
+                    event.key === "ArrowRight"
+                      ? (index + 1) % tabs.length
+                      : event.key === "ArrowLeft"
+                        ? (index + tabs.length - 1) % tabs.length
+                        : event.key === "Home"
+                          ? 0
+                          : event.key === "End"
+                            ? tabs.length - 1
+                            : null;
+                  if (next !== null) {
+                    event.preventDefault();
+                    navigate(tabs[next].id);
+                  }
+                }}
+              >
+                <Icon size={15} /> {label}
+              </button>
+            ))}
+          </div>
         </nav>
         <div className="header-end">
           <button
@@ -345,23 +365,35 @@ export default function App() {
               <Globe2 size={12} /> KESIAPSIAGAAN KARHUTLA{" "}
               <ChevronRight size={11} /> INDONESIA
             </div>
-            <h1>Kenali risiko. Siapkan langkah.</h1>
+            <h1>
+              {tab === "home"
+                ? "Kenali risiko. Siapkan langkah."
+                : tab === "map"
+                  ? "Jelajahi aktivitas satelit"
+                  : "Data & analitik"}
+            </h1>
             <p>
-              Pilih wilayah, pahami indikator karhutla, dan siapkan keluarga.
+              {tab === "home"
+                ? "Pahami indikator risiko dan siapkan keluarga."
+                : tab === "map"
+                  ? "Pilih wilayah, periode, dan lapisan observasi satelit."
+                  : "Baca pola observasi sesuai wilayah dan periode pilihan."}
             </p>
           </div>
           <div className="page-actions">
             <span className="demo-badge">
               <span /> {isDemo ? "Mode Demo" : "Cache NASA FIRMS"}
             </span>
-            <button
-              className="outline-button"
-              onClick={exportData}
-              disabled={!data}
-            >
-              {exported ? <Check size={15} /> : <ArrowDownToLine size={15} />}{" "}
-              {exported ? "Diekspor" : "Ekspor CSV"}
-            </button>
+            {tab === "data" && (
+              <button
+                className="outline-button"
+                onClick={exportData}
+                disabled={!data}
+              >
+                {exported ? <Check size={15} /> : <ArrowDownToLine size={15} />}{" "}
+                {exported ? "Diekspor" : "Ekspor CSV"}
+              </button>
+            )}
           </div>
         </div>
         <div className="context-bar">
@@ -408,32 +440,6 @@ export default function App() {
           </div>
         ) : (
           <>
-            <div className="data-provenance" role="status">
-              <strong>{isDemo ? "Mode Demo" : "Cache NASA FIRMS"}</strong>
-              <p>
-                {isDemo
-                  ? "Observasi sintetis, bukan kondisi saat ini."
-                  : `Cakupan ${data.coverage?.start} sampai ${data.coverage?.end} (UTC), bukan pantauan langsung.`}
-              </p>
-              <details>
-                <summary>Sumber dan batas data</summary>
-                <p>{data.notice}</p>
-                {data.mode === "firms" ? (
-                  <p>
-                    Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT.
-                    Sinkronisasi: {data.updatedAt} / cakupan{" "}
-                    {data.coverage?.start} sampai {data.coverage?.end} (UTC).
-                    Cache tidak diperbarui otomatis; cakupan satelit bukan
-                    jaminan semua kebakaran teramati.
-                  </p>
-                ) : (
-                  <p>
-                    Observasi sintetis untuk demonstrasi. Tidak mencerminkan
-                    kondisi kebakaran saat ini.
-                  </p>
-                )}
-              </details>
-            </div>
             <div className="citizen-filters">
               <label>
                 Wilayah
@@ -484,279 +490,365 @@ export default function App() {
                 penuh.
               </p>
             )}
-            {risk && (
-              <div className="citizen-grid">
-                <div className="citizen-summary">
-                  <RiskStatusCard risk={risk} region={region} />
-                  <RiskBrief
-                    risk={risk}
+            <section
+              id="panel-home"
+              role="tabpanel"
+              aria-labelledby="tab-home"
+              tabIndex={0}
+              hidden={tab !== "home"}
+            >
+              {risk && (
+                <div className="citizen-grid">
+                  <div className="citizen-summary">
+                    <RiskStatusCard risk={risk} region={region} />
+                    <RiskBrief
+                      risk={risk}
+                      region={region}
+                      onExpand={() => setModal("brief")}
+                    />
+                  </div>
+                  <EmergencyActionPanel
+                    key={`${region}-${year}-${month}-${risk.level}`}
+                    level={risk.level}
                     region={region}
-                    onExpand={() => setModal("brief")}
                   />
                 </div>
-                <EmergencyActionPanel
-                  key={`${region}-${year}-${month}-${risk.level}`}
-                  level={risk.level}
+              )}
+              <div className="home-actions">
+                <button
+                  className="outline-button"
+                  onClick={() => navigate("map")}
+                >
+                  Buka Peta aktivitas <ArrowRight size={16} />
+                </button>
+                <button
+                  className="outline-button"
+                  onClick={() => navigate("data")}
+                >
+                  Buka Data & analitik <ArrowRight size={16} />
+                </button>
+              </div>
+            </section>
+            <section
+              id="panel-map"
+              role="tabpanel"
+              aria-labelledby="tab-map"
+              tabIndex={0}
+              hidden={tab !== "map"}
+            >
+              <p className="coverage-explanation">
+                Observasi satelit bukan konfirmasi kejadian kebakaran. Filter
+                peta tidak mengubah indikator risiko.
+              </p>
+              {mapVisited && (
+                <>
+                  <div className="workspace">
+                    <section className="map-panel">
+                      <div className="map-heading">
+                        <h2>
+                          <span className="live-square" /> Peta aktivitas
+                        </h2>
+                        <ProvinceSearch
+                          regions={data.boundaries.features
+                            .map((feature) => feature.properties.PROVINSI)
+                            .sort()}
+                          ranking={ranking}
+                          onSelect={setRegion}
+                        />
+                        <div>
+                          <span className="subtle-tag">
+                            {layerLabel.toUpperCase()}
+                          </span>
+                          <span className="map-hint">
+                            Pilih provinsi untuk melihat rincian{" "}
+                            <ArrowUpRight size={12} />
+                          </span>
+                        </div>
+                      </div>
+                      <IndonesiaMap
+                        boundaries={data.boundaries}
+                        records={mapRecords}
+                        selected={region}
+                        onSelect={setRegion}
+                        showMarkers={markers}
+                        showBorders={borders}
+                        density={density}
+                        onDensityChange={setDensity}
+                      />
+                      {isDemo && (
+                        <FireReplay
+                          month={month}
+                          setMonth={setMonth}
+                          playing={playing}
+                          setPlaying={setPlaying}
+                          counts={counts}
+                          speed={speed}
+                          setSpeed={setSpeed}
+                          year={year}
+                        />
+                      )}
+                    </section>
+                    <RegionPanel
+                      isDemo={isDemo}
+                      periodLabel={periodLabel}
+                      region={region}
+                      regions={data.boundaries.features
+                        .map((f) => f.properties.PROVINSI)
+                        .sort()}
+                      onRegion={setRegion}
+                      year={year}
+                      layer={layer}
+                      setLayer={setLayer}
+                      raw={selectedRaw}
+                      activity={harmonizedCount}
+                      counts={counts}
+                      anomaly={anomaly}
+                      markers={markers}
+                      setMarkers={setMarkers}
+                      borders={borders}
+                      setBorders={setBorders}
+                      density={density}
+                      setDensity={setDensity}
+                      highOnly={highOnly}
+                      setHighOnly={setHighOnly}
+                      onMethod={() => setModal("method")}
+                      month={month}
+                    />
+                  </div>
+                </>
+              )}
+            </section>
+            <section
+              id="panel-data"
+              role="tabpanel"
+              aria-labelledby="tab-data"
+              tabIndex={0}
+              hidden={tab !== "data"}
+            >
+              <p className="coverage-explanation">
+                Pilihan peta: {layerLabel} ?{" "}
+                {highOnly
+                  ? "Hanya keyakinan tinggi"
+                  : "Semua kategori keyakinan"}
+                .{" "}
+                <button className="text-button" onClick={() => navigate("map")}>
+                  Ubah filter peta
+                </button>
+              </p>
+              <div className="metrics">
+                <Metric
+                  label={
+                    layer === "Harmonized"
+                      ? "Observasi gabungan"
+                      : `Deteksi ${layer}`
+                  }
+                  value={
+                    hasCoverage
+                      ? number(selectedActivity.length)
+                      : "Belum dapat dinilai"
+                  }
+                  icon={<Flame size={17} />}
+                  sub={
+                    layer === "Harmonized"
+                      ? `${number(selectedRaw.length)} deteksi sumber`
+                      : "Observasi satelit"
+                  }
+                  detail="Bukan kejadian kebakaran individual"
+                  spark={isDemo ? counts : undefined}
+                />
+                <Metric
+                  label="Keyakinan tinggi"
+                  value={hasCoverage ? number(high) : "Belum dapat dinilai"}
+                  icon={<ShieldCheck size={17} />}
+                  sub={`${highPercent}% dari observasi terpilih`}
+                  detail="Kategori keyakinan sensor"
+                  progress={hasCoverage ? highPercent : undefined}
+                />
+                <Metric
+                  label="Provinsi dengan aktivitas"
+                  value={
+                    hasCoverage
+                      ? number(activeRegions).padStart(2, "0")
+                      : "Belum dapat dinilai"
+                  }
+                  suffix={region === "Indonesia" ? "/ 38" : "/ 1"}
+                  icon={<MapPin size={17} />}
+                  sub={
+                    region === "Indonesia" ? "Provinsi dengan deteksi" : region
+                  }
+                  detail="Dalam periode terpilih"
+                />
+                <Metric
+                  label="Sel grid terpadat"
+                  value={
+                    hasCoverage
+                      ? number(largestCell(selectedActivity))
+                      : "Belum dapat dinilai"
+                  }
+                  suffix="obs."
+                  icon={<Grid2X2 size={17} />}
+                  sub="Observasi terbanyak dalam sel 0,05°"
+                  detail="Kepadatan spasial · bukan batas kebakaran"
+                />
+              </div>
+              <RegionLeaders
+                ranking={ranking}
+                selected={region}
+                period={`${periodLabel} ${year}`}
+                onSelect={(name) => {
+                  setRegion(name);
+                  navigate("map");
+                }}
+              />
+              <div className="analytics-heading">
+                <div>
+                  <h2>
+                    {view === "compare"
+                      ? "Perbandingan tahunan"
+                      : isDemo
+                        ? "Pola historis"
+                        : "Ringkasan cakupan cache"}
+                  </h2>
+                  <span>
+                    {region} <span className="divider-dot">/</span> {layerLabel}{" "}
+                    <span className="divider-dot">/</span>{" "}
+                    {isDemo
+                      ? "Analisis tahunan demo"
+                      : "Observasi dalam cakupan cache"}
+                  </span>
+                </div>
+                {isDemo && (
+                  <button
+                    className="text-button"
+                    onClick={() =>
+                      setView(view === "compare" ? "history" : "compare")
+                    }
+                  >
+                    {view === "compare" ? "Pola historis" : "Bandingkan tahun"}{" "}
+                    <ArrowRight size={14} />
+                  </button>
+                )}
+              </div>
+              {view === "compare" && isDemo && (
+                <YearComparison
+                  records={regionalActivity}
+                  year={year}
+                  comparisonYear={comparisonYear}
+                  onChange={setComparisonYear}
                   region={region}
                 />
-              </div>
-            )}
-            <div className="metrics">
-              <Metric
-                label={
-                  layer === "Harmonized"
-                    ? "Observasi gabungan"
-                    : `Deteksi ${layer}`
-                }
-                value={
-                  hasCoverage
-                    ? number(selectedActivity.length)
-                    : "Belum dapat dinilai"
-                }
-                icon={<Flame size={17} />}
-                sub={
-                  layer === "Harmonized"
-                    ? `${number(selectedRaw.length)} deteksi sumber`
-                    : "Observasi satelit"
-                }
-                detail="Bukan kejadian kebakaran individual"
-                spark={isDemo ? counts : undefined}
-              />
-              <Metric
-                label="Keyakinan tinggi"
-                value={hasCoverage ? number(high) : "Belum dapat dinilai"}
-                icon={<ShieldCheck size={17} />}
-                sub={`${highPercent}% dari observasi terpilih`}
-                detail="Kategori keyakinan sensor"
-                progress={hasCoverage ? highPercent : undefined}
-              />
-              <Metric
-                label="Provinsi dengan aktivitas"
-                value={
-                  hasCoverage
-                    ? number(activeRegions).padStart(2, "0")
-                    : "Belum dapat dinilai"
-                }
-                suffix={region === "Indonesia" ? "/ 38" : "/ 1"}
-                icon={<MapPin size={17} />}
-                sub={
-                  region === "Indonesia" ? "Provinsi dengan deteksi" : region
-                }
-                detail="Dalam periode terpilih"
-              />
-              <Metric
-                label="Sel grid terpadat"
-                value={
-                  hasCoverage
-                    ? number(largestCell(selectedActivity))
-                    : "Belum dapat dinilai"
-                }
-                suffix="obs."
-                icon={<Grid2X2 size={17} />}
-                sub="Observasi terbanyak dalam sel 0,05°"
-                detail="Kepadatan spasial · bukan batas kebakaran"
-              />
-            </div>
-            <div className="workspace">
-              <section className="map-panel">
-                <div className="map-heading">
-                  <h2>
-                    <span className="live-square" /> Peta aktivitas
-                  </h2>
-                  <ProvinceSearch
-                    regions={data.boundaries.features
-                      .map((feature) => feature.properties.PROVINSI)
-                      .sort()}
-                    ranking={ranking}
-                    onSelect={setRegion}
-                  />
-                  <div>
-                    <span className="subtle-tag">
-                      {layerLabel.toUpperCase()}
-                    </span>
-                    <span className="map-hint">
-                      Pilih provinsi untuk melihat rincian{" "}
-                      <ArrowUpRight size={12} />
-                    </span>
-                  </div>
-                </div>
-                <IndonesiaMap
-                  boundaries={data.boundaries}
-                  records={mapRecords}
-                  selected={region}
-                  onSelect={setRegion}
-                  showMarkers={markers}
-                  showBorders={borders}
-                  density={density}
-                  onDensityChange={setDensity}
-                />
-                {isDemo && (
-                  <FireReplay
-                    month={month}
-                    setMonth={setMonth}
-                    playing={playing}
-                    setPlaying={setPlaying}
+              )}
+              {!isDemo && (
+                <p className="data-provenance">
+                  Arsip FIRMS hanya mencakup rentang sinkronisasi yang tersedia.
+                  Grafik berikut menunjukkan jumlah yang tersedia, bukan total
+                  bulanan/tahunan lengkap. Baseline, kalender historis, dan
+                  perbandingan tahunan belum dapat dihitung dari cache singkat
+                  ini.
+                </p>
+              )}
+              <div className="analytics-grid">
+                {isDemo ? (
+                  <HotspotTrend
                     counts={counts}
-                    speed={speed}
-                    setSpeed={setSpeed}
+                    baseline={baseline}
+                    baselineAvailable={
+                      isDemo && history.some((h) => h.year < year)
+                    }
                     year={year}
+                    onMonth={changeMonth}
+                  />
+                ) : coverage ? (
+                  <CacheActivity
+                    records={selectedActivity}
+                    coverage={coverage}
+                    year={year}
+                    month={month}
+                  />
+                ) : (
+                  <p>Belum dapat dinilai: cakupan tidak tersedia.</p>
+                )}
+                {isDemo && (
+                  <ActivityCalendar
+                    data={history}
+                    selectedYear={year}
+                    onSelect={(y, m) => {
+                      changeYear(y);
+                      setMonth(m);
+                    }}
                   />
                 )}
-              </section>
-              <RegionPanel
-                isDemo={isDemo}
-                periodLabel={periodLabel}
-                region={region}
-                regions={data.boundaries.features
-                  .map((f) => f.properties.PROVINSI)
-                  .sort()}
-                onRegion={setRegion}
-                year={year}
-                layer={layer}
-                setLayer={setLayer}
-                raw={selectedRaw}
-                activity={harmonizedCount}
-                counts={counts}
-                anomaly={anomaly}
-                markers={markers}
-                setMarkers={setMarkers}
-                borders={borders}
-                setBorders={setBorders}
-                density={density}
-                setDensity={setDensity}
-                highOnly={highOnly}
-                setHighOnly={setHighOnly}
-                onMethod={() => setModal("method")}
-                month={month}
-              />
-            </div>
-            <RegionLeaders
-              ranking={ranking}
-              selected={region}
-              period={`${periodLabel} ${year}`}
-              onSelect={(name) => {
-                setRegion(name);
-                document
-                  .querySelector(".workspace")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-            />
-            <div className="analytics-heading" ref={analytics}>
-              <div>
-                <h2>
-                  {view === "compare"
-                    ? "Perbandingan tahunan"
-                    : isDemo
-                      ? "Pola historis"
-                      : "Ringkasan cakupan cache"}
-                </h2>
-                <span>
-                  {region} <span className="divider-dot">/</span> {layerLabel}{" "}
-                  <span className="divider-dot">/</span>{" "}
-                  {isDemo
-                    ? "Analisis tahunan demo"
-                    : "Observasi dalam cakupan cache"}
-                </span>
               </div>
-              {isDemo && (
-                <button
-                  className="text-button"
-                  onClick={() =>
-                    navigate(view === "compare" ? "history" : "compare")
-                  }
-                >
-                  {view === "compare" ? "Pola historis" : "Bandingkan tahun"}{" "}
-                  <ArrowRight size={14} />
-                </button>
+              {view === "history" && isDemo && (
+                <section className="card historical-detail">
+                  <div className="card-heading">
+                    <h3>Periode tidak biasa · {year}</h3>
+                    <span className="subtle-tag">RATA-RATA + 2σ</span>
+                  </div>
+                  <p className="helper">
+                    Setiap bulan dibandingkan dengan bulan yang sama pada tahun
+                    sebelumnya. Diperlukan sedikitnya tiga tahun baseline.
+                  </p>
+                  <div className="critical-months">
+                    {MONTHS.map((name, i) => {
+                      const a = analyze(regionalActivity, year, i + 1, years);
+                      return (
+                        <button
+                          key={name}
+                          className={a.unusual ? "is-unusual" : ""}
+                          onClick={() => {
+                            changeMonth(i + 1);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                        >
+                          <span>{name}</span>
+                          <strong>{number(a.current)}</strong>
+                          <small>
+                            {!a.enough
+                              ? "Baseline belum tersedia"
+                              : a.unusual
+                                ? "Tidak biasa"
+                                : "Rentang biasa"}
+                          </small>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
               )}
-            </div>
-            {view === "compare" && isDemo && (
-              <YearComparison
-                records={regionalActivity}
-                year={year}
-                comparisonYear={comparisonYear}
-                onChange={setComparisonYear}
-                region={region}
-              />
-            )}
-            {!isDemo && (
-              <p className="data-provenance">
-                Arsip FIRMS hanya mencakup rentang sinkronisasi di atas. Grafik
-                berikut menunjukkan jumlah yang tersedia, bukan total
-                bulanan/tahunan lengkap. Baseline, kalender historis, dan
-                perbandingan tahunan belum dapat dihitung dari cache singkat
-                ini.
+              <button
+                className="outline-button"
+                onClick={() => setModal("method")}
+              >
+                Sensor, metode & batas data <CircleHelp size={16} />
+              </button>
+            </section>
+            <div className="data-provenance" role="status">
+              <strong>{isDemo ? "Mode Demo" : "Cache NASA FIRMS"}</strong>
+              <p>
+                {isDemo
+                  ? "Observasi sintetis, bukan kondisi saat ini."
+                  : `Cakupan ${data.coverage?.start} sampai ${data.coverage?.end} (UTC), bukan pantauan langsung.`}
               </p>
-            )}
-            <div className="analytics-grid">
-              {isDemo ? (
-                <HotspotTrend
-                  counts={counts}
-                  baseline={baseline}
-                  baselineAvailable={
-                    isDemo && history.some((h) => h.year < year)
-                  }
-                  year={year}
-                  onMonth={changeMonth}
-                />
-              ) : coverage ? (
-                <CacheActivity
-                  records={selectedActivity}
-                  coverage={coverage}
-                  year={year}
-                  month={month}
-                />
-              ) : (
-                <p>Belum dapat dinilai: cakupan tidak tersedia.</p>
-              )}
-              {isDemo && (
-                <ActivityCalendar
-                  data={history}
-                  selectedYear={year}
-                  onSelect={(y, m) => {
-                    changeYear(y);
-                    setMonth(m);
-                  }}
-                />
-              )}
+              <details>
+                <summary>Sumber dan batas data</summary>
+                <p>{data.notice}</p>
+                {data.mode === "firms" ? (
+                  <p>
+                    Sumber: NASA FIRMS / MODIS_NRT + VIIRS_SNPP_NRT.
+                    Sinkronisasi: {data.updatedAt} / cakupan{" "}
+                    {data.coverage?.start} sampai {data.coverage?.end} (UTC).
+                    Cache tidak diperbarui otomatis; cakupan satelit bukan
+                    jaminan semua kebakaran teramati.
+                  </p>
+                ) : (
+                  <p>
+                    Observasi sintetis untuk demonstrasi. Tidak mencerminkan
+                    kondisi kebakaran saat ini.
+                  </p>
+                )}
+              </details>
             </div>
-            {view === "history" && isDemo && (
-              <section className="card historical-detail">
-                <div className="card-heading">
-                  <h3>Periode tidak biasa · {year}</h3>
-                  <span className="subtle-tag">RATA-RATA + 2σ</span>
-                </div>
-                <p className="helper">
-                  Setiap bulan dibandingkan dengan bulan yang sama pada tahun
-                  sebelumnya. Diperlukan sedikitnya tiga tahun baseline.
-                </p>
-                <div className="critical-months">
-                  {MONTHS.map((name, i) => {
-                    const a = analyze(regionalActivity, year, i + 1, years);
-                    return (
-                      <button
-                        key={name}
-                        className={a.unusual ? "is-unusual" : ""}
-                        onClick={() => {
-                          changeMonth(i + 1);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                      >
-                        <span>{name}</span>
-                        <strong>{number(a.current)}</strong>
-                        <small>
-                          {!a.enough
-                            ? "Baseline belum tersedia"
-                            : a.unusual
-                              ? "Tidak biasa"
-                              : "Rentang biasa"}
-                        </small>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
             <div className="data-notice">
               <InfoMark />
               <p>

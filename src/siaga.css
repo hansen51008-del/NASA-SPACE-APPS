@@ -4,6 +4,52 @@
   font-size: 13px;
   line-height: 1.7;
 }
+.main-tabs {
+  display: flex;
+  gap: 12px;
+}
+.topbar .main-tabs button {
+  min-height: 44px;
+}
+[role="tabpanel"][hidden] {
+  display: none;
+}
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.home-actions button,
+[role="tabpanel"] > button {
+  min-height: 44px;
+  white-space: normal;
+}
+[role="tabpanel"] > button {
+  margin-bottom: 18px;
+}
+.main-tabs button:focus-visible {
+  outline: 2px solid #e6c77c;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  .main-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+  }
+  .topbar .main-tabs button {
+    flex-direction: column;
+    min-width: 0;
+    min-height: 56px;
+    padding: 8px 4px;
+  }
+  .home-actions button {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
 .citizen-filters {
   display: flex;
   flex-wrap: wrap;

@@ -7,6 +7,7 @@ const page = await browser.newPage({
   viewport: { width: 1440, height: 1100 },
   deviceScaleFactor: 1,
 });
+const go = (name) => page.getByRole("tab", { name, exact: true }).click();
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await mkdir("test-results", { recursive: true });
@@ -19,6 +20,7 @@ try {
   await page.goto(process.env.APP_URL ?? "http://127.0.0.1:5173", {
     waitUntil: "networkidle",
   });
+  await go("Peta aktivitas");
   await page
     .getByRole("heading", { name: "Peta aktivitas", exact: true })
     .waitFor();
@@ -103,6 +105,7 @@ try {
     await page.getByLabel("Wilayah pantauan", { exact: true }).inputValue(),
     "Kalimantan Tengah",
   );
+  await go("Data & analitik");
   await page
     .getByRole("button", { name: "Jelajahi Riau", exact: true })
     .click();
@@ -132,9 +135,11 @@ try {
     "true",
   );
   await page.getByRole("button", { name: "Atur ulang", exact: true }).click();
+  await go("Data & analitik");
   await page.locator(".chart-point").first().hover();
   assert.match(await page.locator(".trend-tooltip").textContent(), /Jan 2025/);
   const before = await page.locator(".metric-main").first().innerText();
+  await go("Peta aktivitas");
   await page
     .getByLabel("Wilayah pantauan", { exact: true })
     .selectOption("Kalimantan Tengah");
@@ -186,6 +191,7 @@ try {
   );
   await page.getByLabel("Hanya keyakinan tinggi", { exact: true }).uncheck();
   await page.getByRole("button", { name: "Gabungan", exact: true }).click();
+  await go("Data & analitik");
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Ekspor CSV" }).click(),
@@ -212,19 +218,19 @@ try {
     .click();
   await page.getByLabel("Tahun pembanding").selectOption("2021");
   assert.equal(await page.getByLabel("Tahun pembanding").inputValue(), "2021");
+  await go("Beranda");
   await page.getByRole("button", { name: /Baca ringkasan/ }).click();
   assert.equal(await page.locator("dialog").evaluate((d) => d.open), true);
   assert.match(await page.locator(".full-brief").innerText(), /Riau mencatat/);
   await page.keyboard.press("Escape");
   assert.equal(await page.locator("dialog").evaluate((d) => d.open), false);
+  await go("Data & analitik");
   await page
     .getByRole("button", { name: "Pola historis", exact: true })
     .first()
     .click();
   assert.equal(await page.locator(".critical-months button").count(), 12);
-  await page
-    .getByRole("button", { name: "Peta & kesiapsiagaan", exact: true })
-    .click();
+  await go("Peta aktivitas");
   await page
     .getByLabel("Wilayah pantauan", { exact: true })
     .selectOption("Indonesia");

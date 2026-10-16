@@ -33,6 +33,7 @@ try {
       waitUntil: "domcontentloaded",
     },
   );
+  await page.getByRole("tab", { name: "Peta aktivitas", exact: true }).click();
   await page
     .locator('.terrain-view[data-ready="true"]')
     .waitFor({ timeout: 45000 });

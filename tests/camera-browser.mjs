@@ -7,6 +7,7 @@ const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
 try {
   await page.goto("http://127.0.0.1:5173", { waitUntil: "domcontentloaded" });
+  await page.getByRole("tab", { name: "Peta aktivitas", exact: true }).click();
   await page.locator('.terrain-view[data-ready="true"]').waitFor();
   await page.emulateMedia({ reducedMotion: "reduce" });
   const explore = page.getByRole("button", {

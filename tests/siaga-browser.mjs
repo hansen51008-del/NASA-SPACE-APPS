@@ -15,6 +15,7 @@ await page.route("**/*", (route) =>
     : route.abort(),
 );
 const url = process.env.APP_URL ?? "http://127.0.0.1:5175";
+const go = (name) => page.getByRole("tab", { name, exact: true }).click();
 const header =
   "latitude,longitude,acq_date,acq_time,confidence,instrument,brightness,bright_ti4,satellite\n";
 function fixture(count) {
@@ -46,6 +47,7 @@ try {
     .locator(".data-provenance strong")
     .filter({ hasText: "Mode Demo" })
     .waitFor();
+  await go("Peta aktivitas");
   await page.getByRole("button", { name: "2D", exact: true }).click();
   assert.equal(await page.locator(".province").count(), 38);
   await page.getByLabel("Wilayah pemantauan").selectOption("Riau");
@@ -82,6 +84,14 @@ try {
     );
     await page.reload();
     await page.locator(`.risk-${level.toLowerCase()}`).waitFor();
+    assert.equal(
+      await page
+        .getByRole("tab", { name: "Beranda", exact: true })
+        .getAttribute("aria-selected"),
+      "true",
+    );
+    assert.equal(await page.locator(".workspace").count(), 0);
+    assert.equal(await page.locator(".metrics").isVisible(), false);
     const sourceDetails = page.locator(".data-provenance details").first();
     assert.equal(await sourceDetails.getAttribute("open"), null);
     await sourceDetails.locator("summary").click();
@@ -124,6 +134,7 @@ try {
         await page.locator(".safe-status-copy").innerText(),
         /tetap pantau arahan resmi/,
       );
+    await go("Beranda");
     await page.locator(".emergency-checklist input").first().check();
     if (level === "Siaga") {
       await page
@@ -160,13 +171,7 @@ try {
         );
         if (width === 360) {
           const positions = await page.evaluate(() =>
-            [
-              ".risk-status",
-              ".risk-brief",
-              ".emergency-panel",
-              ".workspace",
-              ".analytics-heading",
-            ].map(
+            [".risk-status", ".risk-brief", ".emergency-panel"].map(
               (selector) =>
                 document.querySelector(selector).getBoundingClientRect().top,
             ),
@@ -189,6 +194,7 @@ try {
       }
       await page.setViewportSize({ width: 1440, height: 1050 });
     }
+    await go("Peta aktivitas");
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await page.screenshot({
       path: `test-results/siaga-${level.toLowerCase()}-desktop.png`,
@@ -201,16 +207,23 @@ try {
     });
     assert.equal(await page.getByLabel("Bulan pemantauan").inputValue(), "all");
     assert.equal(await page.locator(".risk-score strong").innerText(), level);
+    await go("Beranda");
+    assert.equal(
+      await page.locator(".emergency-checklist input").first().isChecked(),
+      true,
+    );
     await page.unroute("**/data/firms-cache.json");
   }
   if (existsSync("public/data/firms-cache.json")) {
     await page.reload();
+    await go("Data & analitik");
     await page.locator(".cache-activity").waitFor();
     assert.match(
-      await page.locator(".data-provenance").first().innerText(),
+      await page.locator(".data-provenance[role=status]").innerText(),
       /Cache NASA FIRMS/,
     );
     assert.equal(await page.getByLabel("Bulan pemantauan").inputValue(), "all");
+    await go("Peta aktivitas");
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await page.screenshot({
       path: "test-results/siaga-local-cache-desktop.png",
